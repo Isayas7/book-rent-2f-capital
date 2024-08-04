@@ -21,7 +21,12 @@ const LoginForm = () => {
         <Checkbox {...label} />
         <Typography>Remember me</Typography>
       </Box>
-      <Button variant="contained">LOGIN</Button>
+      <Link href="/dashboard">
+        <Button variant="contained" sx={{ width: "100%" }}>
+          LOGIN
+        </Button>
+      </Link>
+
       <Box sx={{ display: "flex", justifyContent: "center" }}>
         <Typography>Have not have an account?</Typography>
         <Link href="/" style={{ color: "#0f4ec2" }}>

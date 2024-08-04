@@ -21,7 +21,11 @@ const RegisterForm = () => {
         <Checkbox {...label} />
         <Typography>I accept the Terms and Conditions</Typography>
       </Box>
-      <Button variant="contained">SIGN IN</Button>
+      <Link href="/login">
+        <Button variant="contained" sx={{ width: "100%" }}>
+          SIGN IN
+        </Button>
+      </Link>
       <Box sx={{ display: "flex", justifyContent: "center" }}>
         <Typography>Alredy have an account?</Typography>
         <Link href="/login" style={{ color: "#0f4ec2" }}>

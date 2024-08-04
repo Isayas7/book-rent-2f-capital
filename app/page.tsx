@@ -30,6 +30,7 @@ export default function Home() {
               height: "100vh",
               alignItems: "center",
               width: "100%",
+              backgroundColor: "var(--textWhite)",
             }}
           >
             <Box sx={{ width: "100%" }}>
