@@ -1,4 +1,4 @@
-import { registerFormData } from "@/form/form";
+import { registerFormData } from "@/data/form";
 import { Box, Button, Checkbox, TextField, Typography } from "@mui/material";
 import Link from "next/link";
 import React from "react";

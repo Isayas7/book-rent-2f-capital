@@ -34,6 +34,35 @@ export const adminLinks1: AdminLink[] = [
     icon: <EmailIcon />,
   },
 ];
+
+export const ownerLinks: AdminLink[] = [
+  {
+    title: "Dashboard",
+    path: "/dashboard",
+    icon: <DashboardIcon />,
+  },
+  {
+    title: "Book Upload",
+    path: "/dashboard/bookUpload",
+    icon: <BookIcon />,
+  },
+  {
+    title: "Other",
+    path: "/dashboard/Other",
+    icon: <PersonIcon />,
+  },
+  {
+    title: "Other",
+    path: "/dashboard/Other",
+    icon: <PersonIcon />,
+  },
+  {
+    title: "Other",
+    path: "/dashboard/other",
+    icon: <EmailIcon />,
+  },
+];
+
 export const adminLinks2: AdminLink[] = [
   {
     title: "Notification",

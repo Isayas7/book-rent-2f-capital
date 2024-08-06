@@ -4,7 +4,14 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 const Revenue = () => {
   const down = true;
   return (
-    <Box sx={{ backgroundColor: "var(--bg)", borderRadius: 1, p: 3 }}>
+    <Box
+      sx={{
+        backgroundColor: "#FDFDFD",
+        boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+        borderRadius: 1,
+        p: 3,
+      }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -15,7 +22,15 @@ const Revenue = () => {
         }}
       >
         <Typography>Income</Typography>
-        <Typography>This Month</Typography>
+        <Typography
+          sx={{
+            backgroundColor: "var(--softbg)",
+            p: 0.5,
+            borderRadius: "10%",
+          }}
+        >
+          This Month
+        </Typography>
       </Box>
       <Divider />
       <Box

@@ -2,14 +2,7 @@
 import { Box, Typography } from "@mui/material";
 import React, { PureComponent } from "react";
 
-import {
-  PieChart,
-  Pie,
-  Sector,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { PieChart, Pie, Cell, Tooltip } from "recharts";
 
 const data = [
   { name: "Group A", value: 400 },
@@ -35,7 +28,7 @@ export default class CustomPie extends PureComponent {
           <Typography>Available Books</Typography>
           <Typography
             sx={{
-              backgroundColor: "var(--bgCard)",
+              backgroundColor: "var(--softbg)",
               p: 0.5,
               borderRadius: "10%",
             }}

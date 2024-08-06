@@ -12,12 +12,13 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import LocalLibraryIcon from "@mui/icons-material/LocalLibrary";
 
-import { adminLinks1, adminLinks2 } from "@/form/data";
+import { adminLinks1, adminLinks2, ownerLinks } from "@/data/data";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const role = "owner";
 
   return (
     <Box sx={{ p: 1, height: "100%" }}>
@@ -47,31 +48,65 @@ const Sidebar = () => {
         </Box>
 
         <List sx={{ px: 1 }}>
-          {adminLinks1.map((link, index) => (
-            <ListItem
-              disablePadding
-              key={index}
-              sx={(theme) => ({
-                ...(link.path === pathname && {
-                  backgroundColor: "#115293",
-                }),
-                borderRadius: 2,
-                marginTop: 1,
-                "&:hover": {
-                  backgroundColor: "#115293",
-                },
-              })}
-            >
-              <Link href={link.path} style={{ width: "100%" }}>
-                <ListItemButton sx={{ fontSize: 25 }}>
-                  <ListItemIcon sx={{ color: "white" }}>
-                    {link.icon}
-                  </ListItemIcon>
-                  <ListItemText sx={{ fontSize: 25 }} primary={link.title} />
-                </ListItemButton>
-              </Link>
-            </ListItem>
-          ))}
+          {role !== "owner"
+            ? adminLinks1.map((link, index) => (
+                <ListItem
+                  disablePadding
+                  key={index}
+                  sx={(theme) => ({
+                    ...(link.path === pathname && {
+                      backgroundColor: "#115293",
+                    }),
+                    borderRadius: 2,
+                    marginTop: 1,
+                    "&:hover": {
+                      backgroundColor: "#115293",
+                    },
+                  })}
+                >
+                  <Link href={link.path} style={{ width: "100%" }}>
+                    <ListItemButton sx={{ fontSize: 25 }}>
+                      <ListItemIcon sx={{ color: "white" }}>
+                        {link.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        sx={{ fontSize: 25 }}
+                        primary={link.title}
+                      />
+                    </ListItemButton>
+                  </Link>
+                </ListItem>
+              ))
+            : role === "owner"
+            ? ownerLinks.map((link, index) => (
+                <ListItem
+                  disablePadding
+                  key={index}
+                  sx={(theme) => ({
+                    ...(link.path === pathname && {
+                      backgroundColor: "#115293",
+                    }),
+                    borderRadius: 2,
+                    marginTop: 1,
+                    "&:hover": {
+                      backgroundColor: "#115293",
+                    },
+                  })}
+                >
+                  <Link href={link.path} style={{ width: "100%" }}>
+                    <ListItemButton sx={{ fontSize: 25 }}>
+                      <ListItemIcon sx={{ color: "white" }}>
+                        {link.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        sx={{ fontSize: 25 }}
+                        primary={link.title}
+                      />
+                    </ListItemButton>
+                  </Link>
+                </ListItem>
+              ))
+            : ""}
         </List>
 
         <Divider sx={{ color: "#115293" }} />
@@ -97,7 +132,7 @@ const Sidebar = () => {
                   <ListItemIcon sx={{ color: "white" }}>
                     {link.icon}
                   </ListItemIcon>
-                  <ListItemText primary={link.title} />
+                  <ListItemText sx={{ fontWeight: 50 }} primary={link.title} />
                 </ListItemButton>
               </Link>
             </ListItem>
