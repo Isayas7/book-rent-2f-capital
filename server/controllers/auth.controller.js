@@ -3,24 +3,24 @@ import jwt from "jsonwebtoken";
 import prisma from "../utils/connect.js";
 
 export const register = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
+
 
   try {
     // HASH THE PASSWORD
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    console.log(hashedPassword);
 
     // CREATE A NEW USER AND SAVE TO DB
     const newUser = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
+        role
       },
     });
 
-    console.log(newUser);
 
     res.status(201).json({ message: "User created successfully" });
   } catch (err) {
@@ -30,6 +30,8 @@ export const register = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+  console.log(req.userId);
+
   const { email, password } = req.body;
 
   try {
@@ -54,7 +56,7 @@ export const login = async (req, res) => {
     const token = jwt.sign(
       {
         id: user.id,
-        isAdmin: false,
+        role: user.role,
       },
       process.env.JWT_SECRET_KEY,
       { expiresIn: age }
