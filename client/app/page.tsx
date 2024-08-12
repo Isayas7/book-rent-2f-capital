@@ -5,9 +5,9 @@ import RegisterForm from "@/components/register-form";
 export default function Home() {
   return (
     <Box>
-      <Box sx={{ height: "100vh", color: "white" }}>
+      <Box sx={{ minheight: "100vh", color: "white" }}>
         {/* Left */}
-        <Box sx={{ display: "flex" }}>
+        <Box sx={{ display: "flex", height: "100%" }}>
           <Box
             sx={{
               backgroundColor: "#171B36",
@@ -15,7 +15,6 @@ export default function Home() {
               justifyContent: "center",
               alignItems: "center",
               flex: 1,
-              height: "100vh",
             }}
           >
             <LocalLibraryIcon sx={{ width: 200, height: 200 }} />
@@ -27,7 +26,7 @@ export default function Home() {
               display: "flex",
               p: 4,
               flex: 1,
-              height: "100vh",
+              height: "100%",
               alignItems: "center",
               width: "100%",
               backgroundColor: "var(--textWhite)",

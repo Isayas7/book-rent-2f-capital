@@ -1,9 +1,9 @@
 import prisma from "../utils/connect.js";
-import jwt from "jsonwebtoken";
 import { createBookSchema, updateBookSchema } from "../utils/validationSchema.js";
 import { z } from "zod";
 import defineAbilityFor from "../utils/abilities.js";
 import { subject } from "@casl/ability";
+import { UserStatus, BookStatus } from "@prisma/client";
 
 export const addBook = async (req, res) => {
   const currentUser = req.user;
@@ -14,8 +14,19 @@ export const addBook = async (req, res) => {
   if (!isAllowed) {
     return res.status(403).json({ message: "Forbidden: You do not have permission to upload books." });
   }
+  const { title } = req.body
 
   try {
+
+    const book = await prisma.book.findUnique({
+      where: { title },
+    });
+
+
+    if (book) {
+      return res.status(403).json({ message: "The Book alredy exist." });
+    }
+
     const validatedData = createBookSchema.parse(req.body);
 
     const newBook = await prisma.book.create({
@@ -107,15 +118,14 @@ export const deleteBook = async (req, res) => {
 
 export const getOwnBooks = async (req, res) => {
   const currentUser = req.user;
+  const ability = defineAbilityFor(currentUser);
+  const isAllowed = ability.can('get', "OwnBooks");
+
+  if (!isAllowed) {
+    return res.status(403).json({ message: "Forbidden: You do not have permission to get this book." });
+  }
 
   try {
-
-    const ability = defineAbilityFor(currentUser);
-    const isAllowed = ability.can('get', "OwnBook");
-
-    if (!isAllowed) {
-      return res.status(403).json({ message: "Forbidden: You do not have permission to get this book." });
-    }
 
     const books = await prisma.book.findMany({
       where: {
@@ -131,30 +141,109 @@ export const getOwnBooks = async (req, res) => {
 };
 
 
-export const getBooks = async (req, res) => {
+export const getAllBooks = async (req, res) => {
   const currentUser = req.user;
+
+  const ability = defineAbilityFor(currentUser);
+  const isAllowed = ability.can("get", "AllBooks");
+
+  if (!isAllowed) {
+    return res.status(403).json({ message: "Forbidden: You do not have permission to get Books list." });
+  }
+
   try {
 
-    const ability = defineAbilityFor(currentUser);
-    const isAllowed = ability.can("get", "Books");
 
-    if (!isAllowed) {
-      return res.status(403).json({ message: "Forbidden: You do not have permission to get Books list." });
+    const { category, author, ownerId, location } = req.query;
+
+    const filters = {};
+    if (category) filters.category = category;
+    if (author) filters.author = author;
+    if (ownerId) filters.ownerId = parseInt(ownerId);
+
+    let userIds;
+    if (location) {
+      // First find user IDs by location
+      const users = await prisma.user.findMany({
+        where: {
+          location: location,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      userIds = users.map(user => user.id);
     }
 
-    const booksList = await prisma.book.findMany();
-    res.status(200).json(ownersList);
+    if (userIds) {
+      filters.ownerId = { in: userIds };
+    }
+
+    // Fetch filtered books
+    const booksList = await prisma.book.findMany({
+      where: filters,
+    });
+
+    res.status(200).json(booksList);
   } catch (err) {
-    res.status(500).json({ message: "Failed to get Book list " });
+    console.log(err);
+
+    res.status(500).json({ message: "Failed to get Book list" });
+  }
+};
+
+export const getBooks = async (req, res) => {
+
+  try {
+    const filters = {};
+    let userIds;
+
+    // First find user those their status  APPROVED
+    const users = await prisma.user.findMany({
+      where: {
+        status: UserStatus.APPROVED
+      },
+    });
+
+    userIds = users.map(user => user.id);
+
+
+    if (userIds) {
+      filters.ownerId = { in: userIds };
+    }
+
+    const booksList = await prisma.book.findMany({
+      where: {
+        status: BookStatus.APPROVED,
+        isAvailable: true,
+        ...filters
+      },
+    });
+
+    res.status(200).json(booksList);
+  } catch (err) {
+    console.log(err);
+
+
+    res.status(500).json({ message: "Failed to get Book list" });
   }
 };
 
 
-export const BookStatus = async (req, res) => {
+
+export const changeBookStatus = async (req, res) => {
   const currentUser = req.user
 
   const id = parseInt(req.params.id)
   const { status } = req.body
+
+  const ability = defineAbilityFor(currentUser);
+  const isAllowed = ability.can("change", "bookStatus")
+
+  if (!isAllowed) {
+    return res.status(403).json({ message: "Forbidden: You do not have permission to change book status." });
+  }
 
   try {
     const book = await prisma.book.findUnique({
@@ -163,13 +252,6 @@ export const BookStatus = async (req, res) => {
 
     if (!book) {
       return res.status(404).json({ message: "book not found" });
-    }
-
-    const ability = defineAbilityFor(currentUser);
-    const isAllowed = ability.can("change", "bookStatus")
-
-    if (!isAllowed) {
-      return res.status(403).json({ message: "Forbidden: You do not have permission to change book status." });
     }
 
     const bookStatus = await prisma.book.update({
@@ -187,25 +269,3 @@ export const BookStatus = async (req, res) => {
   }
 
 }
-
-
-export const getBook = async (req, res) => {
-  const id = req.params.id;
-  const currentUser = req.user;
-
-  try {
-    const ability = defineAbilityFor(currentUser);
-    const isAllowed = ability.can('get', "OwnBook");
-
-    if (!isAllowed) {
-      return res.status(403).json({ message: "Forbidden: You do not have permission to get this book." });
-    }
-
-    const book = await prisma.book.findUnique({
-      where: { id },
-    });
-    res.status(200).json(book);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to get book" });
-  }
-};

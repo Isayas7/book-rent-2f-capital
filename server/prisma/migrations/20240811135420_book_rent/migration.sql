@@ -7,6 +7,9 @@ CREATE TYPE "UserStatus" AS ENUM ('APPROVE', 'APPROVED');
 -- CreateEnum
 CREATE TYPE "BookStatus" AS ENUM ('APPROVE', 'APPROVED');
 
+-- CreateEnum
+CREATE TYPE "RentStatus" AS ENUM ('BORROWED', 'RETURNED');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
@@ -14,6 +17,8 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "role" "UserRole" NOT NULL,
+    "location" TEXT NOT NULL,
+    "wallet" DOUBLE PRECISION DEFAULT 0.00,
     "status" "UserStatus" NOT NULL DEFAULT 'APPROVE',
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -27,6 +32,8 @@ CREATE TABLE "Book" (
     "author" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
+    "rentPrice" DOUBLE PRECISION NOT NULL,
+    "coverPhotoUrl" TEXT,
     "status" "BookStatus" NOT NULL DEFAULT 'APPROVE',
     "isAvailable" BOOLEAN NOT NULL DEFAULT true,
     "ownerId" INTEGER NOT NULL,
@@ -37,11 +44,13 @@ CREATE TABLE "Book" (
 -- CreateTable
 CREATE TABLE "Rental" (
     "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "transactionDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "status" "RentStatus" NOT NULL DEFAULT 'BORROWED',
+    "quantity" INTEGER NOT NULL,
+    "rentPrice" DOUBLE PRECISION NOT NULL,
+    "returnDate" TIMESTAMP(3) NOT NULL,
     "bookId" INTEGER NOT NULL,
     "renterId" INTEGER NOT NULL,
-    "rentPrice" DOUBLE PRECISION NOT NULL,
-    "transactionDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Rental_pkey" PRIMARY KEY ("id")
 );

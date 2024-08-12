@@ -20,6 +20,8 @@ function CustomTable<T extends MRT_RowData>({
   maxHeight,
   title,
 }: CustomTableProps<T>) {
+
+  
   const table = useMaterialReactTable({
     enableColumnActions: false,
     enableSorting: false,

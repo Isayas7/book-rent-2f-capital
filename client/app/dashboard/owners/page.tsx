@@ -3,7 +3,10 @@ import {
   adminOwnerColumnsTypes,
 } from "@/components/dashboard/columns/admin-owner-columns";
 import CustomTable from "@/components/dashboard/custom-table";
+import { getQueryClient } from "@/get-query-client";
+import { pokemonOptions } from "@/hooks/use-books-query";
 import { Box } from "@mui/material";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import React from "react";
 
 export const data: adminOwnerColumnsTypes[] = [
@@ -86,14 +89,20 @@ export const data: adminOwnerColumnsTypes[] = [
   },
 ];
 export default function Owners() {
+   const queryClient = getQueryClient()
+  void queryClient.prefetchQuery(pokemonOptions)
+
   return (
     <Box>
-      <CustomTable
+     <HydrationBoundary state={dehydrate(queryClient)}>
+       <CustomTable
         columns={adminOwnerColumns}
         data={data}
         maxHeight="470px"
         title="List of Owner"
       />
+      </HydrationBoundary>
+      
     </Box>
   );
 }

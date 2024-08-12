@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import authRoute from "./routes/auth.route.js";
 import bookRoute from "./routes/book.route.js";
 import userRoute from "./routes/user.route.js";
+import rentalRoute from "./routes/rental.route.js";
 
 
 const app = express();
@@ -16,6 +17,8 @@ app.use(cookieParser());
 app.use("/api/auth", authRoute);
 app.use("/api/book", bookRoute);
 app.use("/api/user", userRoute);
+app.use("/api/rental", rentalRoute);
+
 
 
 

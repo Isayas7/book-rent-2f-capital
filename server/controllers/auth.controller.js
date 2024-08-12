@@ -1,13 +1,17 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../utils/connect.js";
+import { registerSchema } from "../utils/validationSchema.js";
+import { z } from "zod";
 
 export const register = async (req, res) => {
-  const { email, password, role } = req.body;
 
 
   try {
     // HASH THE PASSWORD
+    const validatedData = registerSchema.parse(req.body);
+
+    const { email, password, location, role } = validatedData;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -16,8 +20,9 @@ export const register = async (req, res) => {
     const newUser = await prisma.user.create({
       data: {
         email,
-        password: hashedPassword,
-        role
+        role,
+        location,
+        password: hashedPassword
       },
     });
 
@@ -25,12 +30,15 @@ export const register = async (req, res) => {
     res.status(201).json({ message: "User created successfully" });
   } catch (err) {
     console.log(err);
+
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ message: "Invalid requested data" });
+    }
     res.status(500).json({ message: "Failed to create user!" });
   }
 };
 
 export const login = async (req, res) => {
-  console.log(req.userId);
 
   const { email, password } = req.body;
 
@@ -73,7 +81,9 @@ export const login = async (req, res) => {
       .status(200)
       .json(userInfo);
   } catch (err) {
-    console.log(err);
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ error: "Invalid requested data" });
+    }
     res.status(500).json({ message: "Failed to login!" });
   }
 };
