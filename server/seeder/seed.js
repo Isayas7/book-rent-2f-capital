@@ -46,7 +46,7 @@ const seedData = async () => {
             );
             books.push({
                 ownerId: randomUser.id,
-                title: faker.lorem.words(3),
+                bookName: faker.lorem.words(3),
                 author: faker.person.firstName(),
                 category: faker.helpers.arrayElement([
                     "Fiction",

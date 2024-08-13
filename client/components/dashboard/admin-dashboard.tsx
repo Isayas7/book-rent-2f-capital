@@ -1,95 +1,20 @@
-import CustomChart from "@/components/dashboard/custom-chart";
-import CustomPie from "@/components/dashboard/custom-pie";
+"use client"
+import CustomChart from "@/components/charts/custom-chart";
+import CustomPie from "@/components/charts/custom-pie";
 import Revenue from "@/components/dashboard/revenue";
 import { Box, Typography } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import {
   adminLiveBookColumns,
   adminLiveBookColumnsTypes,
-} from "@/components/dashboard/columns/admin-live-book-columns";
-import CustomTable from "@/components/dashboard/custom-table";
+} from "@/components/tables/columns/admin-live-book-columns";
+import GenericTable from "@/components/tables/custom-table";
+import { useBookQuery } from "@/hooks/use-books-query";
+import { MRT_ColumnFiltersState } from "material-react-table";
 
-export const data: adminLiveBookColumnsTypes[] = [
-  {
-    no: "01",
-    bookNamber: "John",
-    owner: "Doe",
-    status: "Rent",
-    price: "Kentucky",
-  },
-  {
-    no: "01",
-    bookNamber: "Jane",
-    owner: "Doe",
-    status: "Rent",
-    price: "Ohio",
-  },
-  {
-    no: "01",
-    bookNamber: "Joe",
-    owner: "Doe",
-    status: "Rant",
-    price: "West Virginia",
-  },
-  {
-    no: "01",
-    bookNamber: "Kevin",
-    owner: "Vandy",
-    status: "Rent",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    owner: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    owner: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    owner: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    owner: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    owner: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    owner: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    owner: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-];
 
 const AdminDashboard = () => {
+
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
       {/* Left */}
@@ -122,13 +47,21 @@ const AdminDashboard = () => {
       </Box>
 
       {/* Right */}
-      <Box sx={{ flex: 3 }}>
-        <CustomTable
+      <Box sx={{
+        flex: 3,
+        maxWidth: "800px",
+        overflowX: "scroll",
+      }}>
+
+
+        <GenericTable
           columns={adminLiveBookColumns}
-          data={data}
           maxHeight="300px"
           title="Live Book status"
+          fetchUrl="api/book/allBooks"
+          queryKey="Books"
         />
+
         <Box
           sx={{
             mt: 2,

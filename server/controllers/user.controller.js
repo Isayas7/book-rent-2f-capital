@@ -6,10 +6,11 @@ import { UserRole } from "@prisma/client";
 export const getOwners = async (req, res) => {
     const currentUser = req.user;
 
-    try {
 
+    try {
         const ability = defineAbilityFor(currentUser);
         const isAllowed = ability.can('get', "Owners");
+
 
         if (!isAllowed) {
             return res.status(403).json({ message: "Forbidden: You do not have permission to get Owners list." });
@@ -19,9 +20,22 @@ export const getOwners = async (req, res) => {
             where: {
                 role: UserRole.OWNER
             },
+            include: {
+                _count: {
+                    select: { books: true }
+                }
+            }
         });
-        res.status(200).json(ownersList);
+
+
+        const ownersWithBookCount = ownersList.map(owner => ({
+            ...owner,
+            upload: owner._count.books
+        }));
+
+        res.status(200).json({ data: ownersWithBookCount });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: "Failed to get users" });
     }
 };

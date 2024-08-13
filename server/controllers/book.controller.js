@@ -4,46 +4,68 @@ import { z } from "zod";
 import defineAbilityFor from "../utils/abilities.js";
 import { subject } from "@casl/ability";
 import { UserStatus, BookStatus } from "@prisma/client";
+import cloudinary from '../config/cloudinary.js';
+import streamifier from 'streamifier';
+
 
 export const addBook = async (req, res) => {
   const currentUser = req.user;
-
   const ability = defineAbilityFor(currentUser);
   const isAllowed = ability.can("upload", "Book")
 
   if (!isAllowed) {
     return res.status(403).json({ message: "Forbidden: You do not have permission to upload books." });
   }
-  const { title } = req.body
 
   try {
+    const { bookName, authorName, Category, quantity, rentPrice } = req.body;
+    let coverUrl = null;
+
 
     const book = await prisma.book.findUnique({
-      where: { title },
+      where: { bookName },
     });
-
 
     if (book) {
       return res.status(403).json({ message: "The Book alredy exist." });
     }
 
-    const validatedData = createBookSchema.parse(req.body);
+    // Upload cover image to Cloudinary
+    if (req.file) {
+      const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.v2.uploader.upload_stream(
+          { folder: 'books' },
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+        // Create a readable stream from the buffer
+        const bufferStream = streamifier.createReadStream(req.file.buffer);
+        bufferStream.pipe(uploadStream);
+      });
+      coverUrl = result.secure_url;
+    }
 
+    // Save 
     const newBook = await prisma.book.create({
       data: {
+        bookName,
         ownerId: currentUser.id,
-        ...validatedData,
+        author: authorName,
+        category: Category,
+        quantity: parseInt(quantity, 10),
+        rentPrice: parseFloat(rentPrice),
+        coverPhotoUrl: coverUrl,
       },
     });
 
-    res.status(201).json({ message: "Book created successfully", book: newBook });
-
-  } catch (err) {
-    // Handle validation errors
-    if (err instanceof z.ZodError) {
-      return res.status(400).json({ message: "Invalid request data", errors: err.errors });
-    }
-    res.status(500).json({ message: "Failed to create book" });
+    res.status(201).json(newBook);
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred while uploading the book' });
   }
 };
 
@@ -121,77 +143,188 @@ export const getOwnBooks = async (req, res) => {
   const ability = defineAbilityFor(currentUser);
   const isAllowed = ability.can('get', "OwnBooks");
 
+
   if (!isAllowed) {
     return res.status(403).json({ message: "Forbidden: You do not have permission to get this book." });
   }
 
+  const {
+    id,
+    bookName,
+    category,
+    author,
+    quantity,
+    rentPrice,
+    globalFilter
+  } = req.query;
+
+
+
+
   try {
+    // Build the filter criteria for the Book table
+    let bookFilter = {};
+    if (id) bookFilter.id = parseInt(id);
+    if (bookName) bookFilter.bookName = bookName;
+    if (category) bookFilter.category = category;
+    if (author) bookFilter.author = author;
+    if (quantity) bookFilter.quantity = quantity;
+    if (rentPrice) bookFilter.rentPrice = parseFloat(rentPrice);
 
-    const books = await prisma.book.findMany({
+
+
+    const options = {
       where: {
-        ownerId: currentUser.id
+        ownerId: currentUser.id,
+        ...bookFilter,
+        ...(globalFilter ? {
+          OR: [
+            { bookName: { contains: globalFilter, mode: 'insensitive' } },
+            { author: { contains: globalFilter, mode: 'insensitive' } },
+            { category: { contains: globalFilter, mode: 'insensitive' } },
+          ],
+        } : {}),
       },
-    });
-    res.status(200).json(books);
-  } catch (err) {
-    console.log(err.message);
+      include: {
+        rentals: {
+          select: {
+            status: true,
+            rentPrice: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    };
 
+    // Execute the query
+    const books = await prisma.book.findMany(options);
+
+
+    const booksWithDetails = books.map(book => {
+      const rentalInfo = book.rentals.length > 0 ? book.rentals[0] : { status: 'Free', rentPrice: 0 };
+
+      return {
+        ...book,
+        rentalStatus: rentalInfo.status,
+        rentPrice: rentalInfo.rentPrice
+      };
+    });
+
+    res.status(200).json({ data: booksWithDetails });
+  } catch (err) {
+    console.log(err);
     res.status(500).json({ message: "Failed to get books" });
   }
 };
 
 
-export const getAllBooks = async (req, res) => {
-  const currentUser = req.user;
 
+export const getAllBooks = async (req, res) => {
+
+  const currentUser = req.user;
   const ability = defineAbilityFor(currentUser);
   const isAllowed = ability.can("get", "AllBooks");
 
   if (!isAllowed) {
-    return res.status(403).json({ message: "Forbidden: You do not have permission to get Books list." });
+    return res.status(403).json({ message: "Forbidden: You do not have permission to get all book." });
   }
+
+  const {
+    id,
+    bookName,
+    category,
+    author,
+    owner,
+    location,
+    globalFilter
+  } = req.query;
+
 
   try {
 
+    let bookFilter = {};
 
-    const { category, author, ownerId, location } = req.query;
+    if (id) bookFilter.id = parseInt(id);
+    if (bookName) bookFilter.bookName = bookName;
+    if (author) bookFilter.author = author;
+    if (category) bookFilter.category = category;
 
-    const filters = {};
-    if (category) filters.category = category;
-    if (author) filters.author = author;
-    if (ownerId) filters.ownerId = parseInt(ownerId);
+    // Build the filter criteria for the Owner table
+    let ownerFilter = {};
+    if (owner) ownerFilter.email = { contains: owner, mode: 'insensitive' };
+    if (location) ownerFilter.location = { contains: location, mode: 'insensitive' };
 
-    let userIds;
-    if (location) {
-      // First find user IDs by location
-      const users = await prisma.user.findMany({
-        where: {
-          location: location,
+    // Construct the Prisma query options with conditional `where` clause
+    const options = {
+      where: {
+        ...bookFilter,
+        ...(globalFilter ? {
+          OR: [
+            { bookName: { contains: globalFilter, mode: 'insensitive' } },
+            { author: { contains: globalFilter, mode: 'insensitive' } },
+            { category: { contains: globalFilter, mode: 'insensitive' } },
+            {
+              owner: {
+                OR: [
+                  { email: { contains: globalFilter, mode: 'insensitive' } },
+                  { location: { contains: globalFilter, mode: 'insensitive' } },
+                ],
+              },
+            },
+          ],
+        } : {}),
+        ...(Object.keys(ownerFilter).length > 0 ? {
+          owner: {
+            AND: [
+              ...(ownerFilter.email ? [{ email: ownerFilter.email }] : []),
+              ...(ownerFilter.location ? [{ location: ownerFilter.location }] : []),
+            ],
+          },
+        } : {}),
+      },
+      include: {
+        owner: {
+          select: {
+            email: true,
+            location: true,
+          },
         },
-        select: {
-          id: true,
+        rentals: {
+          select: {
+            status: true,
+            rentPrice: true,
+          },
         },
-      });
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    };
 
-      userIds = users.map(user => user.id);
-    }
+    // Execute the query
+    const books = await prisma.book.findMany(options);
 
-    if (userIds) {
-      filters.ownerId = { in: userIds };
-    }
+    const booksWithDetails = books.map(book => {
+      const rentalInfo = book.rentals.length > 0 ? book.rentals[0] : { status: 'Free', rentPrice: 0 };
 
-    // Fetch filtered books
-    const booksList = await prisma.book.findMany({
-      where: filters,
+      return {
+        ...book,
+        owner: book.owner.email,
+        rentalStatus: rentalInfo.status,
+        rentPrice: rentalInfo.rentPrice
+      };
     });
 
-    res.status(200).json(booksList);
+    res.status(200).json({ data: booksWithDetails });
   } catch (err) {
     console.log(err);
-
     res.status(500).json({ message: "Failed to get Book list" });
   }
 };
+
+
 
 export const getBooks = async (req, res) => {
 

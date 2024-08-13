@@ -1,7 +1,12 @@
-import UploadBook from "@/components/upload-book";
+"use client"
+import UploadBook from "@/components/dashboard/upload-book";
+import { AuthContext } from "@/context/AuthContext";
 import { Box, Typography } from "@mui/material";
+import { useContext } from "react";
 
 export default function BookUpload() {
+  const { user } = useContext(AuthContext);
+
   return (
     <Box
       sx={{

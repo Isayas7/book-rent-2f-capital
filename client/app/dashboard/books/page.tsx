@@ -1,111 +1,34 @@
+"use client"
 import {
   adminBookColumns,
   adminBookColumnsTypes,
-} from "@/components/dashboard/columns/admin-book-columns";
-import CustomTable from "@/components/dashboard/custom-table";
+} from "@/components/tables/columns/admin-book-columns";
+import GenericTable from "@/components/tables/custom-table";
+import { useBookQuery } from "@/hooks/use-books-query";
 import { Box } from "@mui/material";
 import React from "react";
 
-export const data: adminBookColumnsTypes[] = [
-  {
-    no: "01",
-    author: "John",
-    owner: "Doe",
-    category: "Kentucky",
-    bookName: "Kentucky",
-    status: "Rent",
-  },
-  {
-    no: "01",
-    author: "Jane",
-    owner: "Doe",
-    category: "Ohio",
-    bookName: "Kentucky",
-    status: "Rent",
-  },
-  {
-    no: "01",
-    author: "Joe",
-    owner: "Doe",
-    category: "West Virginia",
-    bookName: "Kentucky",
-    status: "Rant",
-  },
-  {
-    no: "01",
-    author: "Kevin",
-    owner: "Vandy",
-    category: "Nebraska",
-    bookName: "Kentucky",
-    status: "Rent",
-  },
-  {
-    no: "01",
-    author: "Joshua",
-    owner: "Rolluffs",
-    category: "Nebraska",
-    bookName: "Kentucky",
-    status: "Rented",
-  },
-  {
-    no: "01",
-    author: "Joshua",
-    owner: "Rolluffs",
-    category: "Nebraska",
-    bookName: "Kentucky",
-    status: "Rented",
-  },
-  {
-    no: "01",
-    author: "Joshua",
-    owner: "Rolluffs",
-    category: "Nebraska",
-    bookName: "Kentucky",
-    status: "Rented",
-  },
-  {
-    no: "01",
-    author: "Joshua",
-    owner: "Rolluffs",
-    category: "Nebraska",
-    bookName: "Kentucky",
-    status: "Rented",
-  },
-  {
-    no: "01",
-    author: "Joshua",
-    owner: "Rolluffs",
-    category: "Nebraska",
-    bookName: "Kentucky",
-    status: "Rented",
-  },
-  {
-    no: "01",
-    author: "Joshua",
-    owner: "Rolluffs",
-    category: "Nebraska",
-    bookName: "Kentucky",
-    status: "Rented",
-  },
-  {
-    no: "01",
-    author: "Joshua",
-    owner: "Rolluffs",
-    category: "Nebraska",
-    bookName: "Kentucky",
-    status: "Rented",
-  },
-];
 
 export default function Owners() {
+  const { data, isLoading } = useBookQuery();
+
+
   return (
-    <Box>
-      <CustomTable
-        columns={adminBookColumns}
-        data={data}
-        maxHeight="470px"
-        title="List of Books"
-      />
+    <Box sx={{
+      width: "100%",
+      overflowX: "scroll",
+    }}>
+      {isLoading ? <Box>Loading</Box> :
+        <GenericTable
+          columns={adminBookColumns}
+          data={data}
+          maxHeight="470px"
+          title="List of Books"
+          fetchUrl="api/book/allBooks"
+        />
+
+      }
+
     </Box>
   );
 }

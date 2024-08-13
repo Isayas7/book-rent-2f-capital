@@ -1,13 +1,13 @@
-import CustomChart from "@/components/dashboard/custom-chart";
-import CustomPie from "@/components/dashboard/custom-pie";
+import CustomChart from "@/components/charts/custom-chart";
+import CustomPie from "@/components/charts/custom-pie";
 import Revenue from "@/components/dashboard/revenue";
 import { Box, Typography } from "@mui/material";
 import React from "react";
-import CustomTable from "@/components/dashboard/custom-table";
+import GenericTable from "@/components/tables/custom-table";
 import {
   ownerLiveBookColumns,
   ownerLiveBookColumnsTypes,
-} from "./columns/owner-live-book-columns";
+} from "../tables/columns/owner-live-book-columns";
 
 export const data: ownerLiveBookColumnsTypes[] = [
   {
@@ -122,12 +122,17 @@ const OwnerDashboard = () => {
       </Box>
 
       {/* Right */}
-      <Box sx={{ flex: 3 }}>
-        <CustomTable
+      <Box sx={{
+        flex: 3,
+        maxWidth: "800px",
+        overflowX: "scroll",
+      }}>
+        <GenericTable
           columns={ownerLiveBookColumns}
-          data={data}
           maxHeight="300px"
           title="Live Book status"
+          fetchUrl="/api/book/ownBooks"
+          queryKey="ownerBooks"
         />
         <Box
           sx={{

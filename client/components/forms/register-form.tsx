@@ -1,5 +1,5 @@
 "use client"
-import { registerSchema, UserRole } from "@/data/schema";
+import { registerSchema, UserRole } from "@/utils/schema";
 import { Box, Button, Checkbox, TextField, Typography } from "@mui/material";
 import Link from "next/link";
 import React from "react";
@@ -7,7 +7,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUserRegisterQuery } from "@/hooks/use-users-query";
-import { RegisterFormTypes } from "@/data/types";
+import { RegisterFormTypes } from "@/utils/types";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 

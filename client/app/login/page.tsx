@@ -1,8 +1,17 @@
+"use client"
 import { Box, Divider, Typography } from "@mui/material";
 import LocalLibraryIcon from "@mui/icons-material/LocalLibrary";
-import LoginForm from "@/components/login-form";
+import LoginForm from "@/components/forms/login-form";
+import { useContext } from "react";
+import { AuthContext } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
+  const { user } = useContext(AuthContext);
+  const router = useRouter()
+  if (user) {
+    router.push("/dashboard")
+  }
   return (
     <Box>
       <Box sx={{ height: "100vh", color: "white" }}>

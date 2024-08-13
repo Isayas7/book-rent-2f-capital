@@ -70,16 +70,15 @@ export const login = async (req, res) => {
       { expiresIn: age }
     );
 
-    const { password: userPassword, ...userInfo } = user;
+    const { password: userPassword, wallet, ...userInfo } = user;
 
     res
       .cookie("token", token, {
         httpOnly: true,
-        // secure:true,
         maxAge: age,
       })
       .status(200)
-      .json(userInfo);
+      .json({ ...userInfo });
   } catch (err) {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: "Invalid requested data" });

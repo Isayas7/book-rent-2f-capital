@@ -28,7 +28,7 @@ CREATE TABLE "User" (
 CREATE TABLE "Book" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "title" TEXT NOT NULL,
+    "bookName" TEXT NOT NULL,
     "author" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE "Rental" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Book_title_key" ON "Book"("title");
+CREATE UNIQUE INDEX "Book_bookName_key" ON "Book"("bookName");
 
 -- AddForeignKey
 ALTER TABLE "Book" ADD CONSTRAINT "Book_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

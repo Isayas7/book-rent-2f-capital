@@ -1,7 +1,7 @@
 "use client";
 import { Box } from "@mui/material";
 import { MRT_ColumnDef } from "material-react-table";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteIcon from "@mui/icons-material/Delete";
 import Image from "next/image";
 
@@ -16,7 +16,7 @@ export type ownerLiveBookColumnsTypes = {
 export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
   [
     {
-      accessorKey: "no",
+      accessorKey: "id",
       header: "No.",
       size: 20,
     },
@@ -33,7 +33,7 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
             textAlign: "center",
           }}
         >
-          {renderedCellValue}
+          {"0123"}
         </Box>
       ),
     },
@@ -58,30 +58,53 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
       accessorKey: "status",
       header: "Status",
       size: 40,
-      Cell: ({ renderedCellValue }) => (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Box
-            sx={{
-              p: 0.3,
-              borderRadius: "50%",
-              border: "1px solid red",
-            }}
-          >
-            <Box
-              sx={{
-                width: 10,
-                height: 10,
-                backgroundColor: "red",
-                borderRadius: "50%",
-              }}
-            />
+      Cell: ({ cell }) => {
+        return (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            {cell.getValue() === "BORROWED" ?
+
+              <Box
+                sx={{
+                  p: 0.3,
+                  borderRadius: "50%",
+                  border: "1px solid red",
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 10,
+                    height: 10,
+                    backgroundColor: "red",
+                    borderRadius: "50%",
+                  }}
+                />
+              </Box>
+              :
+              <Box
+                sx={{
+                  p: 0.3,
+                  borderRadius: "50%",
+                  border: "1px solid blue",
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 10,
+                    height: 10,
+                    backgroundColor: "blue",
+                    borderRadius: "50%",
+                  }}
+                />
+              </Box>
+            }
+
+            <Box>{cell.getValue() === "BORROWED" ? "Reneted" : "Free"}</Box>
           </Box>
-          <Box>{renderedCellValue}</Box>
-        </Box>
-      ),
+        )
+      }
     },
     {
-      accessorKey: "price",
+      accessorKey: "rentPrice",
       header: "Price",
       size: 40,
     },
@@ -92,7 +115,7 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
       Cell: () => (
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <VisibilityIcon />
+            <EditOutlinedIcon sx={{ cursor: "pointer" }} />
             <DeleteIcon sx={{ color: "red" }} />
           </Box>
         </Box>

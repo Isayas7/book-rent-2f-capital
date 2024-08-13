@@ -28,7 +28,7 @@ export const registerSchema = z
     });
 
 export const createBookSchema = z.object({
-    title: z.string(),
+    bookName: z.string(),
     author: z.string(),
     category: z.string(),
     quantity: z.number().int().positive(),
