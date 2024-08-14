@@ -34,20 +34,19 @@ enum RentStatus {
   RETURNED
 }
 
-//  username    String
-//   phoneNumber String
-
 model User {
-  id        Int        @id @default(autoincrement())
-  createdAt DateTime   @default(now())
-  email     String     @unique
-  password  String
-  role      UserRole
-  location  String
-  wallet    Float?     @default(0.00)
-  status    UserStatus @default(APPROVE)
-  books     Book[]
-  rentals   Rental[]
+  id          Int        @id @default(autoincrement())
+  createdAt   DateTime   @default(now())
+  email       String     @unique
+  username    String?
+  phoneNumber String?
+  password    String
+  role        UserRole
+  location    String
+  wallet      Float?     @default(0.00)
+  status      UserStatus @default(APPROVE)
+  books       Book[]
+  rentals     Rental[]
 }
 
 model Book {

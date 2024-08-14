@@ -27,20 +27,32 @@ export const registerSchema = z
         path: ["confirmPassword"],
     });
 
+export const loginSchema = z
+    .object({
+        email: z.string().email({
+            message: "please enter valid email",
+        }),
+        password: z.string().min(6, {
+            message: "Password must be at least 6 characters long"
+        }),
+    })
+
+
 export const createBookSchema = z.object({
     bookName: z.string(),
-    author: z.string(),
+    authorName: z.string(),
     category: z.string(),
     quantity: z.number().int().positive(),
     rentPrice: z.number().int().positive(),
-    isAvailable: z.boolean(),
+    isAvailable: z.boolean().optional(),
 });
 
 export const updateBookSchema = z.object({
-    title: z.string().optional(),
-    author: z.string().optional(),
+    bookName: z.string().optional(),
+    authorName: z.string().optional(),
     category: z.string().optional(),
     quantity: z.number().int().positive().optional(),
+    rentPrice: z.number().int().positive(),
     isAvailable: z.boolean().optional(),
 });
 

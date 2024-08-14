@@ -18,7 +18,9 @@ export const addBook = async (req, res) => {
   }
 
   try {
-    const { bookName, authorName, Category, quantity, rentPrice } = req.body;
+
+
+    const { bookName, authorName, category, quantity, rentPrice } = req.body;
     let coverUrl = null;
 
 
@@ -56,7 +58,7 @@ export const addBook = async (req, res) => {
         bookName,
         ownerId: currentUser.id,
         author: authorName,
-        category: Category,
+        category: category,
         quantity: parseInt(quantity, 10),
         rentPrice: parseFloat(rentPrice),
         coverPhotoUrl: coverUrl,
@@ -65,6 +67,8 @@ export const addBook = async (req, res) => {
 
     res.status(201).json(newBook);
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({ error: 'An error occurred while uploading the book' });
   }
 };
@@ -159,8 +163,6 @@ export const getOwnBooks = async (req, res) => {
   } = req.query;
 
 
-
-
   try {
     // Build the filter criteria for the Book table
     let bookFilter = {};
@@ -236,7 +238,7 @@ export const getAllBooks = async (req, res) => {
     bookName,
     category,
     author,
-    owner,
+    username,
     location,
     globalFilter
   } = req.query;
@@ -253,7 +255,7 @@ export const getAllBooks = async (req, res) => {
 
     // Build the filter criteria for the Owner table
     let ownerFilter = {};
-    if (owner) ownerFilter.email = { contains: owner, mode: 'insensitive' };
+    if (username) ownerFilter.username = { contains: username, mode: 'insensitive' };
     if (location) ownerFilter.location = { contains: location, mode: 'insensitive' };
 
     // Construct the Prisma query options with conditional `where` clause
@@ -268,7 +270,7 @@ export const getAllBooks = async (req, res) => {
             {
               owner: {
                 OR: [
-                  { email: { contains: globalFilter, mode: 'insensitive' } },
+                  { username: { contains: globalFilter, mode: 'insensitive' } },
                   { location: { contains: globalFilter, mode: 'insensitive' } },
                 ],
               },
@@ -278,7 +280,7 @@ export const getAllBooks = async (req, res) => {
         ...(Object.keys(ownerFilter).length > 0 ? {
           owner: {
             AND: [
-              ...(ownerFilter.email ? [{ email: ownerFilter.email }] : []),
+              ...(ownerFilter.username ? [{ username: ownerFilter.username }] : []),
               ...(ownerFilter.location ? [{ location: ownerFilter.location }] : []),
             ],
           },
@@ -287,7 +289,7 @@ export const getAllBooks = async (req, res) => {
       include: {
         owner: {
           select: {
-            email: true,
+            username: true,
             location: true,
           },
         },
@@ -311,7 +313,7 @@ export const getAllBooks = async (req, res) => {
 
       return {
         ...book,
-        owner: book.owner.email,
+        username: book.owner.username,
         rentalStatus: rentalInfo.status,
         rentPrice: rentalInfo.rentPrice
       };
@@ -402,3 +404,95 @@ export const changeBookStatus = async (req, res) => {
   }
 
 }
+
+
+export const allFreeBooks = async (req, res) => {
+
+  const currentUser = req.user
+
+  if (!currentUser) {
+    return res.status(400).json({ error: 'Owner ID is required' });
+  }
+
+  const ability = defineAbilityFor(currentUser);
+  const isAllowed = ability.can('get', "allFreeBooks");
+
+  if (!isAllowed) {
+    return res.status(403).json({ message: "Forbidden: You do not have permission to get the data." });
+  }
+  try {
+    const availableBooks = await prisma.book.findMany({
+      where: {
+        isAvailable: true,
+        rentals: {
+          none: {
+            returnDate: {
+              gte: new Date(),
+            }
+          }
+        }
+      },
+      select: {
+        category: true
+      }
+    });
+
+    // Group by category and count books
+    const categoryCounts = availableBooks.reduce((acc, book) => {
+      acc[book.category] = (acc[book.category] || 0) + 1;
+      return acc;
+    }, {});
+
+    res.json(categoryCounts);
+  } catch (error) {
+    console.error('Error fetching free books:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const allFreeBooksForOwner = async (req, res) => {
+  const currentUser = req.user
+
+  if (!currentUser) {
+    return res.status(400).json({ error: 'Owner ID is required' });
+  }
+
+  const ability = defineAbilityFor(currentUser);
+  const isAllowed = ability.can('get', "ownFreeBooks");
+
+  if (!isAllowed) {
+    return res.status(403).json({ message: "Forbidden: You do not have permission to get the data." });
+  }
+
+  try {
+    // Fetch available books for the specified owner
+    const availableBooks = await prisma.book.findMany({
+      where: {
+        isAvailable: true,
+        ownerId: Number(currentUser.id),
+        rentals: {
+          none: {
+            returnDate: {
+              gte: new Date(),
+            }
+          }
+        }
+      },
+      select: {
+        category: true
+      }
+    });
+
+    // Group by category and count books
+    const categoryCounts = availableBooks.reduce((acc, book) => {
+      acc[book.category] = (acc[book.category] || 0) + 1;
+      return acc;
+    }, {});
+
+    res.json(categoryCounts);
+  } catch (error) {
+    console.error('Error fetching free books for owner:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+

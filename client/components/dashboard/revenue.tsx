@@ -1,8 +1,19 @@
 import { Box, Divider, Typography } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-const Revenue = () => {
-  const down = true;
+import BalanceOutlinedIcon from '@mui/icons-material/BalanceOutlined';
+
+export interface RentalStatistics {
+  currentMonthTotal: number;
+  previousMonthTotal: number;
+  percentageChange: number;
+  trend: 'increasing' | 'decreasing' | 'no change';
+}
+interface RevenueProps {
+  data: RentalStatistics | null;
+}
+
+const Revenue: React.FC<RevenueProps> = ({ data }) => {
   return (
     <Box
       sx={{
@@ -42,7 +53,7 @@ const Revenue = () => {
         }}
       >
         <Typography sx={{ fontWeight: 800, fontSize: 18 }}>
-          ETB 9460.00
+          ETB {data?.currentMonthTotal.toFixed(3)}
         </Typography>
         <Box
           sx={{
@@ -52,13 +63,21 @@ const Revenue = () => {
             gap: 0.5,
           }}
         >
-          <Box>{down ? <ArrowDownwardIcon /> : <ArrowUpwardIcon />}</Box>
-          <Typography>1.57</Typography>
+          <Box>
+            {data?.trend === "no change" ? (
+              <BalanceOutlinedIcon color="action" />
+            ) : data?.trend === "decreasing" ? (
+              <ArrowDownwardIcon color="success" />
+            ) : (
+              <ArrowUpwardIcon color="error" />
+            )}
+          </Box>
+          <Typography>{data?.percentageChange.toFixed(1)}%</Typography>
         </Box>
       </Box>
       <Box>
         <Typography sx={{ fontSize: 12, opacity: 0.8 }}>
-          Compered to ETB 9940 last month
+          Compered to ETB {data?.previousMonthTotal.toFixed(3)} last month
         </Typography>
         <Box
           sx={{
@@ -73,7 +92,7 @@ const Revenue = () => {
             Last Month Income
           </Typography>
           <Typography sx={{ fontSize: 12, fontWeight: 600 }}>
-            ETB 9460.00
+            ETB {data?.previousMonthTotal.toFixed(3)}
           </Typography>
         </Box>
       </Box>

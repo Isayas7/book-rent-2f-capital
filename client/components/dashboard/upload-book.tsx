@@ -15,11 +15,9 @@ import {
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useBookCreateQuery } from "@/hooks/use-books-query";
-
-const options = ['Option 1', 'Option 2'];
+import { getOwnBookQuery, useBookCreateQuery } from "@/hooks/use-books-query";
 
 const style = {
   display: "flex",
@@ -38,6 +36,8 @@ const style = {
 };
 
 const UploadBook = () => {
+  const { data } = getOwnBookQuery()
+  const [options, setOptions] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<string | null>(options[0]);
   const [inputValue, setInputValue] = useState('');
@@ -46,13 +46,22 @@ const UploadBook = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+
+  useEffect(() => {
+    if (data && Array.isArray(data.data)) {
+      const bookNames = data.data.map((book: any) => book.bookName);
+      setOptions(bookNames);
+    }
+  }, [data]);
+
+
   const { control, handleSubmit, reset, setValue: setFormValue } = useForm({
     defaultValues: {
       bookName: '',
       authorName: '',
-      Category: '',
-      quantity: '',
-      rentPrice: '',
+      category: '',
+      quantity: null,
+      rentPrice: null,
       cover: null,
     },
   });
@@ -88,15 +97,19 @@ const UploadBook = () => {
     const formData = new FormData();
     formData.append('bookName', data.bookName);
     formData.append('authorName', data.authorName);
-    formData.append('Category', data.Category);
-    formData.append('quantity', data.quantity);
-    formData.append('rentPrice', data.rentPrice);
+    formData.append('category', data.category);
+    formData.append('quantity', String(Number(data.quantity)));
+    formData.append('rentPrice', String(Number(data.rentPrice)));
     if (selectedFile) {
       formData.append('cover', selectedFile);
     }
-    addBook(formData)
 
-    console.log("formData", formData);
+    addBook(formData, {
+      onSuccess: () => {
+        reset();
+        setFileName(null)
+      },
+    });
 
   };
 
@@ -176,7 +189,7 @@ const UploadBook = () => {
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel id="demo-simple-select-label">Category</InputLabel>
                 <Controller
-                  name="Category"
+                  name="category"
                   control={control}
                   render={({ field }) => (
                     <Select
@@ -249,6 +262,7 @@ const UploadBook = () => {
             />
           </Box>
           <Button
+            disabled={isPending}
             variant="contained"
             type="submit"
           >

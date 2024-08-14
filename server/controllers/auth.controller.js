@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../utils/connect.js";
-import { registerSchema } from "../utils/validationSchema.js";
+import { loginSchema, registerSchema } from "../utils/validationSchema.js";
 import { z } from "zod";
 
 export const register = async (req, res) => {
@@ -29,8 +29,6 @@ export const register = async (req, res) => {
 
     res.status(201).json({ message: "User created successfully" });
   } catch (err) {
-    console.log(err);
-
     if (err instanceof z.ZodError) {
       return res.status(400).json({ message: "Invalid requested data" });
     }
@@ -40,9 +38,13 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
 
-  const { email, password } = req.body;
 
   try {
+
+    const validatedData = loginSchema.parse(req.body);
+
+    const { email, password } = validatedData;
+
     // CHECK IF THE USER EXISTS
 
     const user = await prisma.user.findUnique({

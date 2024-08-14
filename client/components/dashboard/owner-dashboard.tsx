@@ -4,92 +4,18 @@ import Revenue from "@/components/dashboard/revenue";
 import { Box, Typography } from "@mui/material";
 import React from "react";
 import GenericTable from "@/components/tables/custom-table";
-import {
-  ownerLiveBookColumns,
-  ownerLiveBookColumnsTypes,
-} from "../tables/columns/owner-live-book-columns";
+import { ownerLiveBookColumns } from "../tables/columns/owner-live-book-columns";
+import { format } from 'date-fns';
+import { getFreeOwnerBooksQuery, getOwnRentalQuery } from "@/hooks/use-books-query";
 
-export const data: ownerLiveBookColumnsTypes[] = [
-  {
-    no: "01",
-    bookNamber: "John",
-    bookName: "Doe",
-    status: "Rent",
-    price: "Kentucky",
-  },
-  {
-    no: "01",
-    bookNamber: "Jane",
-    bookName: "Doe",
-    status: "Rent",
-    price: "Ohio",
-  },
-  {
-    no: "01",
-    bookNamber: "Joe",
-    bookName: "Doe",
-    status: "Rant",
-    price: "West Virginia",
-  },
-  {
-    no: "01",
-    bookNamber: "Kevin",
-    bookName: "Vandy",
-    status: "Rent",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    bookName: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    bookName: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    bookName: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    bookName: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    bookName: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    bookName: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-  {
-    no: "01",
-    bookNamber: "Joshua",
-    bookName: "Rolluffs",
-    status: "Rented",
-    price: "Nebraska",
-  },
-];
 
 const OwnerDashboard = () => {
+  const { data } = getOwnRentalQuery()
+  const { data: freeOwnerBooks } = getFreeOwnerBooksQuery()
+
+
+  const now = new Date();
+  const formattedDate = format(now, 'EEE, dd MMM, yyyy, HH:mm');
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
       {/* Left */}
@@ -105,9 +31,9 @@ const OwnerDashboard = () => {
           This Month statistics
         </Typography>
         <Typography sx={{ fontSize: 14, opacity: 0.6 }}>
-          Tue, 14 Nov, 2024, 11:30
+          {formattedDate}
         </Typography>
-        <Revenue />
+        <Revenue data={data} />
         <Box
           sx={{
             mt: 3,
@@ -117,7 +43,7 @@ const OwnerDashboard = () => {
             boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
           }}
         >
-          <CustomPie />
+          <CustomPie data={freeOwnerBooks} />
         </Box>
       </Box>
 

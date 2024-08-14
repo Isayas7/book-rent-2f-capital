@@ -6,8 +6,8 @@ import Image from "next/image";
 export type adminLiveBookColumnsTypes = {
   no: string;
   bookNamber: string;
-  owner: string;
-  status: string;
+  username: string;
+  rentalStatus: string;
   price: string;
   coverPhotoUrl: string
 };
@@ -23,7 +23,7 @@ export const adminLiveBookColumns: MRT_ColumnDef<adminLiveBookColumnsTypes>[] =
       accessorKey: "bookNamber",
       header: "Book no.",
       size: 40,
-      Cell: ({ renderedCellValue }) => (
+      Cell: ({ row }) => (
         <Box
           sx={{
             backgroundColor: "var(--softbg)",
@@ -37,20 +37,20 @@ export const adminLiveBookColumns: MRT_ColumnDef<adminLiveBookColumnsTypes>[] =
       ),
     },
     {
-      accessorKey: "owner",
+      accessorKey: "username",
       header: "Owner",
       size: 150,
-      Cell: ({ cell }) => {
+      Cell: ({ row }) => {
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Image
-              src={cell.row.original.coverPhotoUrl || "/woman.png"}
+              src={row.original.coverPhotoUrl || "/woman.png"}
               alt="woman"
               width={24}
               height={24}
               style={{ borderRadius: "50%", border: "1px solid grey" }}
             />
-            <Box>{cell.getValue()}</Box>
+            <Box>{row.original.username}</Box>
           </Box>
         )
       }
@@ -61,10 +61,10 @@ export const adminLiveBookColumns: MRT_ColumnDef<adminLiveBookColumnsTypes>[] =
       accessorKey: "rentalStatus",
       header: "Status",
       size: 150,
-      Cell: ({ cell }) => {
+      Cell: ({ row }) => {
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {cell.getValue() === "BORROWED" ?
+            {row.original.rentalStatus === "BORROWED" ?
 
               <Box
                 sx={{
@@ -101,7 +101,7 @@ export const adminLiveBookColumns: MRT_ColumnDef<adminLiveBookColumnsTypes>[] =
               </Box>
             }
 
-            <Box>{cell.getValue() === "BORROWED" ? "Reneted" : "Free"}</Box>
+            <Box>{row.original.rentalStatus === "BORROWED" ? "Reneted" : "Free"}</Box>
           </Box>
         )
       }

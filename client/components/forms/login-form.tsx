@@ -79,7 +79,7 @@ const LoginForm = () => {
         <Typography>Remember me</Typography>
       </Box>
 
-      <Button type="submit" variant="contained" sx={{ width: "100%" }}>
+      <Button disabled={isPending} type="submit" variant="contained" sx={{ width: "100%" }}>
         LOGIN
       </Button>
 

@@ -9,11 +9,11 @@ import { useChangeBookStatusQuery } from "@/hooks/use-books-query";
 export type adminBookColumnsTypes = {
   id: string;
   author: string;
-  owner: string;
+  username: string;
   category: string;
   bookName: string;
   status: string;
-  coverPhotoUrl: String
+  coverPhotoUrl: string
 };
 
 const label = { inputProps: { "aria-label": "Switch demo" } };
@@ -30,19 +30,19 @@ export const adminBookColumns: MRT_ColumnDef<adminBookColumnsTypes>[] = [
     size: 40,
   },
   {
-    accessorKey: "owner",
+    accessorKey: "username",
     header: "Owner",
     size: 150,
-    Cell: ({ cell }) => (
+    Cell: ({ row }) => (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <Image
-          src={cell.row.original.coverPhotoUrl || "/woman.png"}
+          src={row.original.coverPhotoUrl || "/woman.png"}
           alt="woman"
           width={24}
           height={24}
           style={{ borderRadius: "50%", border: "1px solid grey" }}
         />
-        <Box>{cell.getValue()}</Box>
+        <Box>{row.original.username}</Box>
       </Box>
     ),
   },
@@ -61,15 +61,15 @@ export const adminBookColumns: MRT_ColumnDef<adminBookColumnsTypes>[] = [
     header: "Status",
     size: 150,
 
-    Cell: ({ cell }) => {
-      const [checked, setChecked] = useState(cell.getValue() === "APPROVED");
+    Cell: ({ row }) => {
+      const [checked, setChecked] = useState(row.original.status === "APPROVED");
       const mutation = useChangeBookStatusQuery();
 
       const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newChecked = event.target.checked;
         setChecked(newChecked);
-        const newStatus = cell.getValue() === "APPROVED" ? "APPROVE" : "APPROVED"
-        mutation.mutate({ bookId: cell.row.original.id, newStatus });
+        const newStatus = row.original.status === "APPROVED" ? "APPROVE" : "APPROVED"
+        mutation.mutate({ bookId: row.original.id, newStatus });
 
       };
 
@@ -87,7 +87,7 @@ export const adminBookColumns: MRT_ColumnDef<adminBookColumnsTypes>[] = [
           }}
         >
           <DoneIcon sx={{ fontSize: 18 }} />
-          {cell.getValue()}
+          {row.original.status}
           <Switch
             {...label}
             size="medium"

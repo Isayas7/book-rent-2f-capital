@@ -3,7 +3,6 @@ import AdminDashboard from "@/components/dashboard/admin-dashboard";
 import OwnerDashboard from "@/components/dashboard/owner-dashboard";
 import { AuthContext } from "@/context/AuthContext";
 import { UserRole } from "@/utils/schema";
-import defineAbilityFor from "@/utils/abilities";
 import { useRouter } from "next/navigation";
 import { useContext } from "react";
 

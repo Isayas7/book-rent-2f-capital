@@ -15,6 +15,8 @@ CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "email" TEXT NOT NULL,
+    "username" TEXT,
+    "phoneNumber" TEXT,
     "password" TEXT NOT NULL,
     "role" "UserRole" NOT NULL,
     "location" TEXT NOT NULL,

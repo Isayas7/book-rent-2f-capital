@@ -10,12 +10,13 @@ import { useChangeOwnerStatusQuery } from "@/hooks/use-users-query";
 
 export type adminOwnerColumnsTypes = {
   id: string;
+  username: string;
   email: string;
   upload: string;
   location: string;
   phoneNumber: String,
   status: string;
-  coverPhotoUrl: String
+  coverPhotoUrl: string
 };
 const label = { inputProps: { "aria-label": "Switch demo" } };
 
@@ -27,21 +28,20 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
   },
 
   {
-    accessorKey: "email",
+    accessorKey: "username",
     header: "Owner",
     size: 150,
-    Cell: ({ cell }) => {
-      const [username, domain] = cell.row.original.email?.split('@');
+    Cell: ({ row }) => {
       return (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Image
-            src={cell.row.original.coverPhotoUrl || "/woman.png"}
+            src={row.original.coverPhotoUrl || "/woman.png"}
             alt="woman"
             width={24}
             height={24}
             style={{ borderRadius: "50%", border: "1px solid grey" }}
           />
-          <Box>{username}</Box>
+          <Box>{row.original.username}</Box>
         </Box>
       )
     }
@@ -62,15 +62,15 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
     header: "Status",
     size: 150,
 
-    Cell: ({ cell }) => {
-      const [checked, setChecked] = useState(cell.getValue() === "APPROVED");
+    Cell: ({ row }) => {
+      const [checked, setChecked] = useState(row.original.status === "APPROVED");
       const mutation = useChangeOwnerStatusQuery();
 
       const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newChecked = event.target.checked;
         setChecked(newChecked);
-        const newStatus = cell.getValue() === "APPROVED" ? "APPROVE" : "APPROVED"
-        mutation.mutate({ ownerId: cell.row.original.id, newStatus });
+        const newStatus = row.original.status === "APPROVED" ? "APPROVE" : "APPROVED"
+        mutation.mutate({ ownerId: row.original.id, newStatus });
 
       };
 
@@ -88,7 +88,7 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
           }}
         >
           <DoneIcon sx={{ fontSize: 18 }} />
-          {cell.getValue()}
+          {row.original.status}
           <Switch
             {...label}
             size="medium"
@@ -142,10 +142,10 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
             >
               <Box sx={{ ...style, width: 500 }}>
                 <TextField
-                  value={cell.row.original.email}
+                  value={cell.row.original.username}
                   id="outlined-basic"
-                  label="Email"
-                  type="email"
+                  label="Name"
+                  type="text"
                   variant="outlined"
                 />
                 <TextField
@@ -178,12 +178,20 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
             <DeleteIcon sx={{ color: "red" }} />
           </Box>
           {cell.row.original.status === "APPROVED" ?
-            <Button variant="contained" size="small">
+            <Button variant="contained" size="small" sx={{
+              width: "100px",
+              height: "40px"
+            }}>
               {cell.row.original.status}
             </Button> :
-            <Button size="small" sx={{ bg: "#000" }}>
+            <Button variant="contained" size="small" sx={{
+              backgroundColor: "grey", width: "100px",
+              height: "40px"
+            }}>
               {cell.row.original.status}
-            </Button>}
+            </Button>
+
+          }
 
         </Box >
       )

@@ -8,6 +8,8 @@ import {
   getAllBooks,
   getOwnBooks,
   updateBook,
+  allFreeBooks,
+  allFreeBooksForOwner
 } from "../controllers/book.controller.js";
 import upload from "../middleware/multer.js";
 
@@ -21,6 +23,8 @@ router.get("/ownBooks", verifyToken, getOwnBooks);
 router.get("/allBooks", verifyToken, getAllBooks);
 
 router.put("/status/:id", verifyToken, changeBookStatus);
+router.get("/free-books", verifyToken, allFreeBooks);
+router.get("/free-owner-books", verifyToken, allFreeBooksForOwner);
 
 
 

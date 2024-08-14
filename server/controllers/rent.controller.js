@@ -3,6 +3,7 @@ import { z } from "zod";
 import { UserStatus, RentStatus, BookStatus } from "@prisma/client";
 import defineAbilityFor from "../utils/abilities.js";
 import { subject } from "@casl/ability";
+import { getEndOfMonth, getEndOfPreviousMonth, getStartOfMonth, getStartOfPreviousMonth } from "../utils/date.js";
 
 export const rentBook = async (req, res) => {
     const currentUser = req.user;
@@ -136,5 +137,156 @@ export const returnBook = async (req, res) => {
         console.log(error);
 
         res.status(500).json({ error: error.message });
+    }
+};
+
+export const ownRental = async (req, res) => {
+    const currentUser = req.user;
+
+    if (!currentUser) {
+        return res.status(400).json({ error: 'Owner ID is required' });
+    }
+    const ability = defineAbilityFor(currentUser);
+    const isAllowed = ability.can('get', "ownRevenue");
+
+    if (!isAllowed) {
+        return res.status(403).json({ message: "Forbidden: You do not have permission to get own Rental book." });
+    }
+
+    try {
+        const now = new Date();
+        const startOfCurrentMonth = getStartOfMonth(now);
+        const endOfCurrentMonth = getEndOfMonth(now);
+        const startOfPreviousMonth = getStartOfPreviousMonth(now);
+        const endOfPreviousMonth = getEndOfPreviousMonth(now);
+
+        // Fetch revenue for the current month for the owner's books
+        const currentMonthRevenue = await prisma.rental.aggregate({
+            _sum: {
+                rentPrice: true
+            },
+            where: {
+                transactionDate: {
+                    gte: startOfCurrentMonth,
+                    lte: endOfCurrentMonth
+                },
+                book: {
+                    ownerId: Number(currentUser.id)
+                }
+            }
+        });
+
+        // Fetch revenue for the previous month for the owner's books
+        const previousMonthRevenue = await prisma.rental.aggregate({
+            _sum: {
+                rentPrice: true
+            },
+            where: {
+                transactionDate: {
+                    gte: startOfPreviousMonth,
+                    lte: endOfPreviousMonth
+                },
+                book: {
+                    ownerId: Number(currentUser.id) // Filter by owner's books
+                }
+            }
+        });
+
+        const currentMonthTotal = currentMonthRevenue._sum.rentPrice || 0;
+        const previousMonthTotal = previousMonthRevenue._sum.rentPrice || 0;
+
+        // Calculate percentage change
+        let percentageChange = 0;
+        if (previousMonthTotal > 0) {
+            percentageChange = ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100;
+        }
+
+        // Determine if revenue is increasing or decreasing
+        const trend = percentageChange > 0 ? 'increasing' : percentageChange < 0 ? 'decreasing' : 'no change';
+
+        // Send the results in the response
+        res.json({
+            currentMonthTotal,
+            previousMonthTotal,
+            percentageChange,
+            trend
+        });
+    } catch (error) {
+        console.error('Error fetching rental data:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+
+
+export const rentalStatics = async (req, res) => {
+
+    const currentUser = req.user;
+
+    if (!currentUser) {
+        return res.status(400).json({ error: 'Owner ID is required' });
+    }
+    const ability = defineAbilityFor(currentUser);
+    const isAllowed = ability.can('get', "revenue");
+
+    if (!isAllowed) {
+        return res.status(403).json({ message: "Forbidden: You do not have permission to get revenue data." });
+    }
+
+    try {
+        const now = new Date();
+        const startOfCurrentMonth = getStartOfMonth(now);
+        const endOfCurrentMonth = getEndOfMonth(now);
+        const startOfPreviousMonth = getStartOfPreviousMonth(now);
+        const endOfPreviousMonth = getEndOfPreviousMonth(now);
+
+        // Fetch revenue for the current month
+        const currentMonthRevenue = await prisma.rental.aggregate({
+            _sum: {
+                rentPrice: true
+            },
+            where: {
+                transactionDate: {
+                    gte: startOfCurrentMonth,
+                    lte: endOfCurrentMonth
+                }
+            }
+        });
+
+        // Fetch revenue for the previous month
+        const previousMonthRevenue = await prisma.rental.aggregate({
+            _sum: {
+                rentPrice: true
+            },
+            where: {
+                transactionDate: {
+                    gte: startOfPreviousMonth,
+                    lte: endOfPreviousMonth
+                }
+            }
+        });
+
+        const currentMonthTotal = currentMonthRevenue._sum.rentPrice || 0;
+        const previousMonthTotal = previousMonthRevenue._sum.rentPrice || 0;
+
+        // Calculate percentage change
+        let percentageChange = 0;
+        if (previousMonthTotal > 0) {
+            percentageChange = ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100;
+        }
+
+        // Determine if revenue is increasing or decreasing
+        const trend = percentageChange > 0 ? 'increasing' : percentageChange < 0 ? 'decreasing' : 'no change';
+
+        // Send the results in the response
+        res.json({
+            currentMonthTotal,
+            previousMonthTotal,
+            percentageChange,
+            trend
+        });
+    } catch (error) {
+        console.error('Error fetching rental data:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };

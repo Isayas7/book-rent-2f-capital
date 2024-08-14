@@ -3,17 +3,17 @@ import CustomChart from "@/components/charts/custom-chart";
 import CustomPie from "@/components/charts/custom-pie";
 import Revenue from "@/components/dashboard/revenue";
 import { Box, Typography } from "@mui/material";
-import React, { useState } from "react";
 import {
   adminLiveBookColumns,
-  adminLiveBookColumnsTypes,
+
 } from "@/components/tables/columns/admin-live-book-columns";
 import GenericTable from "@/components/tables/custom-table";
-import { useBookQuery } from "@/hooks/use-books-query";
-import { MRT_ColumnFiltersState } from "material-react-table";
+import { getFreeBooksQuery, getRentalStaticsQuery } from "@/hooks/use-books-query";
 
 
 const AdminDashboard = () => {
+  const { data } = getRentalStaticsQuery()
+  const { data: freeBooks } = getFreeBooksQuery()
 
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
@@ -32,7 +32,7 @@ const AdminDashboard = () => {
         <Typography sx={{ fontSize: 14, opacity: 0.6 }}>
           Tue, 14 Nov, 2024, 11:30
         </Typography>
-        <Revenue />
+        <Revenue data={data} />
         <Box
           sx={{
             mt: 3,
@@ -42,7 +42,7 @@ const AdminDashboard = () => {
             boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
           }}
         >
-          <CustomPie />
+          <CustomPie data={freeBooks} />
         </Box>
       </Box>
 

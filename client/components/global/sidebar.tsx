@@ -1,8 +1,6 @@
-"use client";
 import {
   Box,
   Button,
-
   Divider,
   List,
   ListItem,
@@ -22,23 +20,24 @@ import { AuthContext } from "@/context/AuthContext";
 import { UserRole } from "@/utils/schema";
 import { useUserLogoutQuery } from "@/hooks/use-users-query";
 import { sideBarMenu } from "@/utils/data";
-import defineAbilitiesFor from "@/utils/abilities"
+import defineAbilitiesFor from "@/utils/abilities";
 
 const Sidebar = () => {
   const pathname = usePathname();
   const { user, dispatch } = useContext(AuthContext);
   const ability = defineAbilitiesFor(user);
-  const router = useRouter()
+  const router = useRouter();
   const { mutateAsync: logoutUser, isPending } = useUserLogoutQuery();
+
   const handleLogout = async () => {
     try {
       await logoutUser();
       dispatch({ type: "LOGOUT" });
       router.push("/login");
     } catch (error) {
-
+      // Handle error if needed
     }
-  }
+  };
 
   return (
     <Box sx={{ p: 1, height: '100%' }}>
@@ -65,7 +64,6 @@ const Sidebar = () => {
             }}
           >
             <MenuIcon />
-
             <AutoStoriesOutlinedIcon sx={{ width: 35, height: 35, color: '#117693' }} />
             <Typography sx={{ fontSize: 20, color: '#117693' }}>Book Rent</Typography>
           </Box>
@@ -124,7 +122,13 @@ const Sidebar = () => {
                           },
                         })}
                       >
-                        <ListItemButton>
+                        <ListItemButton
+                          onClick={() => {
+                            if (item.title === 'Login as') {
+                              handleLogout();
+                            }
+                          }}
+                        >
                           <ListItemIcon
                             sx={{
                               color: 'white',
@@ -158,7 +162,6 @@ const Sidebar = () => {
           </List>
 
         </Box>
-
 
         {/* Logout Button Section */}
         <Box sx={{ p: 2 }}>

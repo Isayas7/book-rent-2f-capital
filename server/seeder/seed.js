@@ -1,6 +1,5 @@
-import { PrismaClient, UserRole, UserStatus } from '@prisma/client';
+import { PrismaClient, UserRole, UserStatus, BookStatus } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-
 
 const prisma = new PrismaClient();
 
@@ -15,6 +14,8 @@ const seedData = async () => {
         const users = [];
         for (let i = 0; i < 10; i++) {
             users.push({
+                username: faker.internet.userName(),
+                phoneNumber: faker.phone.number(),
                 email: faker.internet.email(),
                 password: "1234",
                 location: faker.helpers.arrayElement([
@@ -24,8 +25,15 @@ const seedData = async () => {
                     "Gondar",
                     "Hawassa",
                 ]),
-                status: faker.helpers.arrayElement([UserStatus.APPROVE, UserStatus.APPROVED]),
-                role: faker.helpers.arrayElement([UserRole.ADMIN, UserRole.CUSTOMER, UserRole.OWNER]),
+                status: faker.helpers.arrayElement([
+                    UserStatus.APPROVED,
+                    UserStatus.PENDING, // Add more statuses if needed
+                ]),
+                role: faker.helpers.arrayElement([
+                    UserRole.ADMIN,
+                    UserRole.CUSTOMER,
+                    UserRole.OWNER,
+                ]),
             });
         }
 
@@ -41,23 +49,28 @@ const seedData = async () => {
         // Create Books
         const books = [];
         for (let i = 0; i < 20; i++) {
-            const randomUser = faker.helpers.arrayElement(
-                createdUsers.filter((user) => user.role === UserRole.OWNER)
-            );
-            books.push({
-                ownerId: randomUser.id,
-                bookName: faker.lorem.words(3),
-                author: faker.person.firstName(),
-                category: faker.helpers.arrayElement([
-                    "Fiction",
-                    "Fantasy",
-                    "Science",
-                    "Business",
-                ]),
-                quantity: faker.number.int({ min: 1, max: 10 }),
-                rentPrice: faker.number.float({ min: 10, max: 100, fractionDigits: 3 }),
-                coverPhotoUrl: faker.image.url(),
-            });
+            const approvedOwners = createdUsers.filter(user => user.role === UserRole.OWNER && user.status === UserStatus.APPROVED);
+            const randomOwner = faker.helpers.arrayElement(approvedOwners);
+            if (randomOwner) {
+                books.push({
+                    ownerId: randomOwner.id,
+                    bookName: faker.lorem.words(3),
+                    author: faker.person.firstName(),
+                    category: faker.helpers.arrayElement([
+                        "Fiction",
+                        "Fantasy",
+                        "Science",
+                        "Business",
+                    ]),
+                    quantity: faker.number.int({ min: 1, max: 10 }),
+                    rentPrice: faker.number.float({ min: 10, max: 100, fractionDigits: 2 }),
+                    coverPhotoUrl: faker.image.url(),
+                    status: faker.helpers.arrayElement([
+                        BookStatus.APPROVED,
+                        BookStatus.PENDING, // Add more statuses if needed
+                    ]),
+                });
+            }
         }
         const createdBooks = [];
         for (const book of books) {
@@ -70,20 +83,22 @@ const seedData = async () => {
         // Create Rentals
         const rentals = [];
         for (let i = 0; i < 15; i++) {
-            const randomBook = faker.helpers.arrayElement(createdBooks);
-            const randomRenter = faker.helpers.arrayElement(
-                createdUsers.filter((user) => user.role === UserRole.CUSTOMER)
-            );
-            rentals.push({
-                renterId: randomRenter.id,
-                bookId: randomBook.id,
-                rentPrice: randomBook.rentPrice,
-                returnDate: faker.date.future(),
-                quantity: faker.number.int({
-                    min: 1,
-                    max: randomBook.quantity,
-                }),
-            });
+            const approvedBooks = createdBooks.filter(book => book.status === BookStatus.APPROVED);
+            const randomBook = faker.helpers.arrayElement(approvedBooks);
+            const renters = createdUsers.filter(user => user.role === UserRole.CUSTOMER);
+            const randomRenter = faker.helpers.arrayElement(renters);
+            if (randomBook && randomRenter) {
+                rentals.push({
+                    renterId: randomRenter.id,
+                    bookId: randomBook.id,
+                    rentPrice: randomBook.rentPrice,
+                    returnDate: faker.date.future(),
+                    quantity: faker.number.int({
+                        min: 1,
+                        max: randomBook.quantity,
+                    }),
+                });
+            }
         }
         for (const rental of rentals) {
             await prisma.rental.create({

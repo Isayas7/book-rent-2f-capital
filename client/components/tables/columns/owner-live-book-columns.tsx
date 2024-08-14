@@ -4,13 +4,16 @@ import { MRT_ColumnDef } from "material-react-table";
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteIcon from "@mui/icons-material/Delete";
 import Image from "next/image";
+import Link from "next/link";
+import { useDeleteBookQuery } from "@/hooks/use-books-query";
 
 export type ownerLiveBookColumnsTypes = {
-  no: string;
+  id: string;
   bookNamber: string;
   bookName: string;
   status: string;
   price: string;
+  coverPhotoUrl: string
 };
 
 export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
@@ -41,16 +44,16 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
       accessorKey: "bookName",
       header: "Book Name",
       size: 80,
-      Cell: ({ renderedCellValue }) => (
+      Cell: ({ row }) => (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Image
-            src="/woman.png"
+            src={row.original.coverPhotoUrl || "/woman.png"}
             alt="woman"
             width={24}
             height={24}
             style={{ borderRadius: "50%", border: "1px solid grey" }}
           />
-          <Box>{renderedCellValue}</Box>
+          <Box>{row.original.bookName}</Box>
         </Box>
       ),
     },
@@ -58,10 +61,10 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
       accessorKey: "status",
       header: "Status",
       size: 40,
-      Cell: ({ cell }) => {
+      Cell: ({ row }) => {
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {cell.getValue() === "BORROWED" ?
+            {row.original.status === "BORROWED" ?
 
               <Box
                 sx={{
@@ -98,7 +101,7 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
               </Box>
             }
 
-            <Box>{cell.getValue() === "BORROWED" ? "Reneted" : "Free"}</Box>
+            <Box>{row.original.status === "BORROWED" ? "Reneted" : "Free"}</Box>
           </Box>
         )
       }
@@ -112,13 +115,20 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
       accessorKey: "action",
       header: "Action ",
       size: 100,
-      Cell: () => (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <EditOutlinedIcon sx={{ cursor: "pointer" }} />
-            <DeleteIcon sx={{ color: "red" }} />
+      Cell: ({ row }) => {
+        const mutation = useDeleteBookQuery();
+        return (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Link href="/dashboard/bookUpload">
+
+                <EditOutlinedIcon sx={{ cursor: "pointer" }} />
+              </Link>
+              <DeleteIcon sx={{ color: "red", cursor: "pointer" }} onClick={() => mutation.mutate(row.original.id)} />
+            </Box>
           </Box>
-        </Box>
-      ),
+        )
+      }
+
     },
   ];
