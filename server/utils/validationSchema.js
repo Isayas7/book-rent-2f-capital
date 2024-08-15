@@ -40,7 +40,7 @@ export const loginSchema = z
 
 export const createBookSchema = z.object({
     bookName: z.string(),
-    authorName: z.string(),
+    author: z.string(),
     category: z.string(),
     quantity: z.number().int().positive(),
     rentPrice: z.number().int().positive(),
@@ -48,11 +48,10 @@ export const createBookSchema = z.object({
 });
 
 export const updateBookSchema = z.object({
-    bookName: z.string().optional(),
-    authorName: z.string().optional(),
-    category: z.string().optional(),
-    quantity: z.number().int().positive().optional(),
-    rentPrice: z.number().int().positive(),
-    isAvailable: z.boolean().optional(),
+    bookName: z.string().min(1, "Book name is required").optional(),
+    author: z.string().min(1, "Author is required").optional(),
+    category: z.string().min(1, "Category is required").optional(),
+    quantity: z.number().int().positive().min(1, "Quantity must be at least 1").optional(),
+    rentPrice: z.number().int().min(0, "Rent price must be at least 0").optional(),
 });
 

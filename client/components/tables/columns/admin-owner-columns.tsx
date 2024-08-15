@@ -6,7 +6,8 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DoneIcon from "@mui/icons-material/Done";
 import { useState } from "react";
-import { useChangeOwnerStatusQuery } from "@/hooks/use-users-query";
+import { useChangeOwnerStatusQuery, useDeleteOwnerQuery } from "@/hooks/use-users-query";
+import { toast } from "react-toastify";
 
 export type adminOwnerColumnsTypes = {
   id: string;
@@ -70,7 +71,11 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
         const newChecked = event.target.checked;
         setChecked(newChecked);
         const newStatus = row.original.status === "APPROVED" ? "APPROVE" : "APPROVED"
-        mutation.mutate({ ownerId: row.original.id, newStatus });
+        mutation.mutate({ ownerId: row.original.id, newStatus }, {
+          onSuccess: () => {
+            toast.success(`Successfully ${row.original.status === "APPROVED" ? "disapproved" : "approved"}`)
+          },
+        });;
 
       };
 
@@ -105,7 +110,7 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
     accessorKey: "action",
     header: "Action ",
     size: 200,
-    Cell: ({ cell }) => {
+    Cell: ({ row }) => {
       const style = {
         display: "flex",
         flexDirection: "column",
@@ -130,6 +135,33 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
       const handleClose = () => {
         setOpen(false);
       };
+      const mutation = useChangeOwnerStatusQuery();
+      const { mutate: deleteOwner } = useDeleteOwnerQuery();
+
+
+      const handleChangeStatus = () => {
+        const newStatus = row.original.status === "APPROVED" ? "APPROVE" : "APPROVED";
+
+        mutation.mutate({ ownerId: row.original.id, newStatus }, {
+          onSuccess: () => {
+            toast.success(`Successfully ${row.original.status === "APPROVED" ? "disapproved" : "approved"}`);
+          },
+          onError: (error) => {
+            toast.error(`Error changing status: ${error.message}`);
+          }
+        });
+      };
+
+      const handleDelete = () => {
+        console.log("vvv", row.original.id,);
+
+        deleteOwner(row.original.id, {
+          onSuccess: () => {
+            toast.success("Successfully deleted")
+          },
+        });
+      }
+
       return (
         < Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -142,21 +174,21 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
             >
               <Box sx={{ ...style, width: 500 }}>
                 <TextField
-                  value={cell.row.original.username}
+                  value={row.original.username}
                   id="outlined-basic"
                   label="Name"
                   type="text"
                   variant="outlined"
                 />
                 <TextField
-                  value={cell.row.original.email}
+                  value={row.original.email}
                   id="outlined-basic"
                   label="Email"
                   type="mail"
                   variant="outlined"
                 />
                 <TextField
-                  value={cell.row.original.location}
+                  value={row.original.location}
 
                   id="outlined-basic"
                   label="Location"
@@ -164,7 +196,7 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
                   variant="outlined"
                 />
                 <TextField
-                  value={cell.row.original.phoneNumber}
+                  value={row.original.phoneNumber}
 
                   id="outlined-basic"
                   label="Phone Number"
@@ -175,22 +207,26 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
 
               </Box>
             </Modal>
-            <DeleteIcon sx={{ color: "red" }} />
+            <DeleteIcon sx={{ color: "red", cursor: "pointer" }} onClick={handleDelete} />
           </Box>
-          {cell.row.original.status === "APPROVED" ?
-            <Button variant="contained" size="small" sx={{
-              width: "100px",
-              height: "40px"
-            }}>
-              {cell.row.original.status}
+          {row.original.status === "APPROVED" ?
+            <Button
+              variant="contained" size="small" sx={{
+                width: "100px",
+                height: "40px"
+              }}
+              onClick={handleChangeStatus}
+            >
+              {row.original.status}
             </Button> :
-            <Button variant="contained" size="small" sx={{
-              backgroundColor: "grey", width: "100px",
-              height: "40px"
-            }}>
-              {cell.row.original.status}
+            <Button
+              onClick={handleChangeStatus}
+              variant="contained" size="small" sx={{
+                backgroundColor: "grey", width: "100px",
+                height: "40px"
+              }}>
+              {row.original.status}
             </Button>
-
           }
 
         </Box >

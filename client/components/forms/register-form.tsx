@@ -4,7 +4,6 @@ import { Box, Button, Checkbox, TextField, Typography } from "@mui/material";
 import Link from "next/link";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUserRegisterQuery } from "@/hooks/use-users-query";
 import { RegisterFormTypes } from "@/utils/types";
@@ -14,7 +13,7 @@ const label = { inputProps: { "aria-label": "Checkbox demo" } };
 const RegisterForm = () => {
   const { mutate: registerUser, isSuccess, isPending, isError, error } = useUserRegisterQuery();
   const { register, handleSubmit, reset, formState: { errors } } = useForm<RegisterFormTypes>({
-    // resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       email: "",
       location: "",

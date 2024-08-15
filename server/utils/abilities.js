@@ -12,6 +12,7 @@ export default function defineAbilityFor(user) {
       can("change", "bookStatus");
       can('get', "revenue")
       can('get', "allFreeBooks")
+      can('delete', "Owner")
 
     } else if (user.role === UserRole.OWNER) {
       can("upload", "Book");
@@ -20,6 +21,7 @@ export default function defineAbilityFor(user) {
       can("get", "OwnBooks");
       can('get', "ownRevenue");
       can('get', "ownFreeBooks")
+      can('get', "ownSingleBook");
     }
   });
 }

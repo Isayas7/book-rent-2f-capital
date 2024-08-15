@@ -18,9 +18,12 @@ export const addBook = async (req, res) => {
   }
 
   try {
+    const { bookName, author, category, quantity, rentPrice } = req.body;
+
+    const dataForValidation = { bookName, author, category, quantity: parseInt(quantity), rentPrice: parseFloat(rentPrice) }
+    const validatedData = createBookSchema.parse(dataForValidation);
 
 
-    const { bookName, authorName, category, quantity, rentPrice } = req.body;
     let coverUrl = null;
 
 
@@ -57,7 +60,7 @@ export const addBook = async (req, res) => {
       data: {
         bookName,
         ownerId: currentUser.id,
-        author: authorName,
+        author: author,
         category: category,
         quantity: parseInt(quantity, 10),
         rentPrice: parseFloat(rentPrice),
@@ -67,11 +70,13 @@ export const addBook = async (req, res) => {
 
     res.status(201).json(newBook);
   } catch (error) {
-    console.log(error);
-
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ message: "Invalid request data" });
+    }
     res.status(500).json({ error: 'An error occurred while uploading the book' });
   }
 };
+
 
 
 
@@ -80,6 +85,15 @@ export const updateBook = async (req, res) => {
   const currentUser = req.user
 
   try {
+
+    const { bookName, author, category, quantity, rentPrice } = req.body;
+
+    const dataForValidation = { bookName, author, category, quantity: parseInt(quantity), rentPrice: parseFloat(rentPrice) }
+    const validatedData = updateBookSchema.parse(dataForValidation);
+
+
+    let coverUrl = null;
+
     const book = await prisma.book.findUnique({
       where: { id },
     });
@@ -95,8 +109,29 @@ export const updateBook = async (req, res) => {
       return res.status(403).json({ message: "Forbidden: You do not have permission to update this book." });
     }
 
+    // Upload cover image to Cloudinary
+    if (req.file) {
+      const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.v2.uploader.upload_stream(
+          { folder: 'books' },
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+        // Create a readable stream from the buffer
+        const bufferStream = streamifier.createReadStream(req.file.buffer);
+        bufferStream.pipe(uploadStream);
+      });
+      coverUrl = result.secure_url;
+    }
 
-    const validatedData = updateBookSchema.parse(req.body);
+    if (coverUrl) {
+      validatedData.coverPhotoUrl = coverUrl
+    }
 
     const updatedBook = await prisma.book.update({
       where: { id },
@@ -105,9 +140,11 @@ export const updateBook = async (req, res) => {
     res.status(201).json({ message: "Book updated successfully" });
 
   } catch (err) {
+    console.log("err", err);
     if (err instanceof z.ZodError) {
-      return res.status(400).json({ message: "Invalid request data", errors: err.errors });
+      return res.status(400).json({ message: "Invalid request data" });
     }
+
     res.status(500).json({ message: "Failed to update books" });
   }
 
@@ -121,6 +158,10 @@ export const deleteBook = async (req, res) => {
     const book = await prisma.book.findUnique({
       where: { id },
     });
+
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
 
     const ability = defineAbilityFor(currentUser);
     const isAllowed = ability.can('delete', subject('Book', book));
@@ -138,6 +179,34 @@ export const deleteBook = async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Failed to delete book" });
+  }
+};
+
+
+export const getOwnSingleBook = async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const currentUser = req.user;
+
+  try {
+    const ability = defineAbilityFor(currentUser);
+    const isAllowed = ability.can('get', 'ownSingleBook');
+
+    if (!isAllowed) {
+      return res.status(403).json({ message: 'Forbidden: You do not have permission to access this resource.' });
+    }
+
+    const ownSingleBook = await prisma.book.findUnique({
+      where: { id, ownerId: currentUser.id },
+    });
+
+    if (!ownSingleBook) {
+      return res.status(404).json({ message: 'Book not found.' });
+    }
+
+    res.status(200).json({ data: ownSingleBook });
+  } catch (err) {
+    console.error('Error fetching single book:', err); // Better logging
+    res.status(500).json({ message: 'Failed to get the book.' });
   }
 };
 

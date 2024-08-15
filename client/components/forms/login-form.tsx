@@ -17,7 +17,7 @@ const LoginForm = () => {
 
   const { mutateAsync: loginUser, isSuccess, isPending, isError, error } = useUserLoginQuery();
   const { register, handleSubmit, reset, formState: { errors } } = useForm<LoginFormTypes>({
-    // resolver: zodResolver(LoginSchema),
+    resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: "",
       password: "",

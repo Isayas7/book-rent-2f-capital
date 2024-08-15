@@ -1,3 +1,4 @@
+import { CreateBookFormTypes, UpdateBookFormTypes } from '@/utils/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios';
 
@@ -67,6 +68,23 @@ export const useBookCreateQuery = () => {
         mutationFn: async (newBook: FormData) => {
             const res = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/book/create`, newBook, { withCredentials: true });
             return res;
+        },
+    });
+};
+
+export const useUpdateBookQuery = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ bookId, newBookInfo }: { bookId: number | null, newBookInfo: FormData }) => {
+            const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/book/${bookId}`;
+            const res = await axios.put(url, newBookInfo, {
+                withCredentials: true,
+            });
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries("OwnBooks");
         },
     });
 };

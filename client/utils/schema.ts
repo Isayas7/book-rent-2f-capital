@@ -43,3 +43,11 @@ export const LoginSchema = z
         }),
 
     })
+
+export const createBookSchema = z.object({
+    bookName: z.string().min(1, "Book name is required"),
+    author: z.string().min(1, "Author is required"),
+    category: z.string().min(1, "Category is required"),
+    quantity: z.number().min(1, "Quantity must be at least 1"),
+    rentPrice: z.number().min(0, "Rent price must be at least 0"),
+});

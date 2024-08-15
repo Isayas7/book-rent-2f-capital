@@ -9,14 +9,15 @@ import {
   getOwnBooks,
   updateBook,
   allFreeBooks,
-  allFreeBooksForOwner
+  allFreeBooksForOwner,
+  getOwnSingleBook
 } from "../controllers/book.controller.js";
 import upload from "../middleware/multer.js";
 
 const router = express.Router();
 
 router.post("/create", verifyToken, upload.single('cover'), addBook);
-router.put("/:id", verifyToken, updateBook);
+router.put("/:id", verifyToken, upload.single('cover'), updateBook);
 router.delete("/:id", verifyToken, deleteBook);
 router.get("/", verifyToken, getBooks);
 router.get("/ownBooks", verifyToken, getOwnBooks);

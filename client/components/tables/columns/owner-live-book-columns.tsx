@@ -6,6 +6,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import Image from "next/image";
 import Link from "next/link";
 import { useDeleteBookQuery } from "@/hooks/use-books-query";
+import { toast } from "react-toastify";
 
 export type ownerLiveBookColumnsTypes = {
   id: string;
@@ -116,7 +117,14 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
       header: "Action ",
       size: 100,
       Cell: ({ row }) => {
-        const mutation = useDeleteBookQuery();
+        const { mutate: deleteBook } = useDeleteBookQuery();
+        const handleDelete = () => {
+          deleteBook(row.original.id, {
+            onSuccess: () => {
+              toast.success("Successfully deleted")
+            },
+          });
+        }
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -124,7 +132,7 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
 
                 <EditOutlinedIcon sx={{ cursor: "pointer" }} />
               </Link>
-              <DeleteIcon sx={{ color: "red", cursor: "pointer" }} onClick={() => mutation.mutate(row.original.id)} />
+              <DeleteIcon sx={{ color: "red", cursor: "pointer" }} onClick={handleDelete} />
             </Box>
           </Box>
         )

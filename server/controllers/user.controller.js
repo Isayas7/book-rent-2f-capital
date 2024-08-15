@@ -77,3 +77,37 @@ export const ownerStatus = async (req, res) => {
 
 }
 
+export const deleteOwner = async (req, res) => {
+    const id = parseInt(req.params.id);
+    const currentUser = req.user;
+    const ability = defineAbilityFor(currentUser);
+    const isAllowed = ability.can('delete', "Owner");
+
+    if (!isAllowed) {
+        return res.status(403).json({ message: "Forbidden: You do not have permission to delete this owner." });
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id },
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: "Owner not found" });
+        }
+
+        // Optional: Delete related books
+        await prisma.book.deleteMany({
+            where: { ownerId: id },
+        });
+
+        await prisma.user.delete({
+            where: { id },
+        });
+
+        res.status(200).json({ message: "Owner deleted" });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Failed to delete owner" });
+    }
+};

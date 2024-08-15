@@ -62,3 +62,15 @@ export const useChangeOwnerStatusQuery = () => {
         },
     });
 };
+
+export const useDeleteOwnerQuery = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => {
+            return axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/${id}`, { withCredentials: true });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries("OwnerList");
+        },
+    });
+};

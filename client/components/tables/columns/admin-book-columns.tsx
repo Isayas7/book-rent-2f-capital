@@ -5,6 +5,7 @@ import { MRT_ColumnDef } from "material-react-table";
 import Image from "next/image";
 import DoneIcon from "@mui/icons-material/Done";
 import { useChangeBookStatusQuery } from "@/hooks/use-books-query";
+import { toast } from "react-toastify";
 
 export type adminBookColumnsTypes = {
   id: string;
@@ -69,8 +70,11 @@ export const adminBookColumns: MRT_ColumnDef<adminBookColumnsTypes>[] = [
         const newChecked = event.target.checked;
         setChecked(newChecked);
         const newStatus = row.original.status === "APPROVED" ? "APPROVE" : "APPROVED"
-        mutation.mutate({ bookId: row.original.id, newStatus });
-
+        mutation.mutate({ bookId: row.original.id, newStatus }, {
+          onSuccess: () => {
+            toast.success(`Successfully ${row.original.status === "APPROVED" ? "disapproved" : "approved"}`)
+          },
+        });
       };
 
       return (

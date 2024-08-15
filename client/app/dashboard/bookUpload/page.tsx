@@ -1,8 +1,12 @@
 "use client"
-import UploadBook from "@/components/dashboard/upload-book";
+import BookForm from "@/components/forms/book-form";
 import { Box, Typography } from "@mui/material";
 
-export default function BookUpload() {
+export default function BookUpload({ searchParams }: {
+  searchParams: {
+    id: String
+  }
+}) {
 
   return (
     <Box
@@ -12,14 +16,13 @@ export default function BookUpload() {
         p: 2,
         borderRadius: 2,
         display: "flex",
-        // justifyContent: "center",
         flexDirection: "column",
         alignItems: "center",
         gap: 5,
       }}
     >
       <Typography>BookUpload</Typography>
-      <UploadBook />
+      <BookForm />
     </Box>
   );
 }
