@@ -1,13 +1,25 @@
-import { CreateBookFormTypes, UpdateBookFormTypes } from '@/utils/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios';
 
 
+export const getSingleBookQuery = (bookId: number) => {
+    return useQuery({
+        queryKey: ["singleBook", bookId],
+        queryFn: async () => {
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/book/single/${bookId}s`, {
+                withCredentials: true,
+            });
+            return res.data
+        },
+        enabled: !!bookId
+    });
+};
+
 export const getOwnBookQuery = () => {
     return useQuery({
-        queryKey: ["OwnBooks"],
+        queryKey: ["ownBooks"],
         queryFn: async () => {
-            const res = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/book/ownBooks`, {
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/book/own-books`, {
                 withCredentials: true,
             });
             return res.data
@@ -16,7 +28,7 @@ export const getOwnBookQuery = () => {
 };
 export const getOwnRentalQuery = () => {
     return useQuery({
-        queryKey: ["OwnRental"],
+        queryKey: ["ownRental"],
         queryFn: async () => {
             const res = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rental/own-rental`, {
                 withCredentials: true,
@@ -64,10 +76,15 @@ export const getFreeOwnerBooksQuery = () => {
 
 
 export const useBookCreateQuery = () => {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: async (newBook: FormData) => {
             const res = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/book/create`, newBook, { withCredentials: true });
             return res;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["ownBooks"] });
         },
     });
 };
@@ -84,7 +101,7 @@ export const useUpdateBookQuery = () => {
             return res.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries("OwnBooks");
+            queryClient.invalidateQueries({ queryKey: ["ownBooks"] });
         },
     });
 };
@@ -96,7 +113,7 @@ export const useDeleteBookQuery = () => {
             return axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/book/${id}`, { withCredentials: true });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries("ownerBooks");
+            queryClient.invalidateQueries({ queryKey: ["ownBooks"] });
         },
     });
 };
@@ -118,7 +135,7 @@ export const useChangeBookStatusQuery = () => {
             return res.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries("Books");
+            queryClient.invalidateQueries({ queryKey: ["allBooks"] });
         },
     });
 };

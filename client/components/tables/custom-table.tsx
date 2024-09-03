@@ -4,7 +4,8 @@ import {
   MRT_RowData,
   useMaterialReactTable,
   type MRT_ColumnDef,
-  type MRT_ColumnFiltersState
+  type MRT_ColumnFiltersState,
+  type MRT_FilterOption
 } from 'material-react-table';
 import { Typography } from '@mui/material';
 import axios from 'axios';
@@ -31,7 +32,6 @@ const GenericTable = <T extends MRT_RowData>({
 }: GenericTableProps<T>) => {
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
-
   const { data, isError, isRefetching, isLoading, refetch } = useQuery<GenericApiResponse<T>>({
     queryKey: [
       queryKey,
@@ -39,25 +39,24 @@ const GenericTable = <T extends MRT_RowData>({
       globalFilter
     ],
     queryFn: async () => {
-      const fetchURL = new URL(fetchUrl, 'http://localhost:8000');
+      const fetchURL = new URL(fetchUrl, process.env.NEXT_PUBLIC_BASE_URL);
 
-      // Convert filters object to query string
-      const filterParams = new URLSearchParams();
-
-      // Add globalFilter
-      if (globalFilter) {
-        filterParams.set('globalFilter', globalFilter);
+      // Convert the columnFilters to the expected query string format
+      if (columnFilters.length > 0) {
+        const filters = columnFilters.map((filter: any) => ({
+          id: filter.id,
+          opervalue: "contains",
+          val: filter.value
+        }));
+        const filterString = JSON.stringify(filters);
+        fetchURL.searchParams.append('filter', filterString);
       }
 
-      // Add columnFilters
-      columnFilters.forEach(filter => {
-        if (filter.id && filter.value) {
-          filterParams.set(filter.id, filter.value);
-        }
-      });
 
-      // Set the search parameters
-      fetchURL.search = filterParams.toString();
+      // Add global filter
+      if (globalFilter) {
+        fetchURL.searchParams.append('search', globalFilter);
+      }
 
       const response = await axios.get<GenericApiResponse<T>>(fetchURL.href, { withCredentials: true });
       return response.data;
@@ -68,7 +67,6 @@ const GenericTable = <T extends MRT_RowData>({
   const table = useMaterialReactTable({
     enableColumnActions: false,
     enableSorting: false,
-
     enablePagination: false,
     enableTableFooter: false,
     enableStickyFooter: false,
@@ -80,8 +78,10 @@ const GenericTable = <T extends MRT_RowData>({
       globalFilter,
       showAlertBanner: isError,
       showProgressBars: isRefetching,
+      showSkeletons: isLoading
     },
     manualFiltering: true,
+    enableColumnFilterModes: true,
     initialState: { showColumnFilters: false },
     renderTopToolbarCustomActions: () => (
       <Typography variant="h6" sx={{ fontWeight: 600, ml: 3, fontSize: 16 }}>
@@ -93,6 +93,7 @@ const GenericTable = <T extends MRT_RowData>({
     muiToolbarAlertBannerProps: isError ? { color: 'error', children: 'Error loading data' } : undefined,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
+
   });
 
   return <MaterialReactTable table={table} />;

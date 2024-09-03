@@ -1,17 +1,24 @@
 import prisma from "../utils/connect.js";
 import { createBookSchema, updateBookSchema } from "../utils/validationSchema.js";
 import { z } from "zod";
-import defineAbilityFor from "../utils/abilities.js";
+import { findBy } from "../casl/findUser.js";
 import { subject } from "@casl/ability";
 import { UserStatus, BookStatus } from "@prisma/client";
 import cloudinary from '../config/cloudinary.js';
 import streamifier from 'streamifier';
+import { createAbility } from "../casl/createAbility.js";
+import { parseFilters } from "../helper/generate.query.js";
 
 
 export const addBook = async (req, res) => {
   const currentUser = req.user;
-  const ability = defineAbilityFor(currentUser);
-  const isAllowed = ability.can("upload", "Book")
+
+
+  const user = await findBy({ id: currentUser.id });
+
+  const ability = createAbility(user.permissions);
+
+  const isAllowed = ability.can("Create", 'Book')
 
   if (!isAllowed) {
     return res.status(403).json({ message: "Forbidden: You do not have permission to upload books." });
@@ -70,7 +77,7 @@ export const addBook = async (req, res) => {
 
     res.status(201).json(newBook);
   } catch (error) {
-    if (err instanceof z.ZodError) {
+    if (error instanceof z.ZodError) {
       return res.status(400).json({ message: "Invalid request data" });
     }
     res.status(500).json({ error: 'An error occurred while uploading the book' });
@@ -92,6 +99,7 @@ export const updateBook = async (req, res) => {
     const validatedData = updateBookSchema.parse(dataForValidation);
 
 
+
     let coverUrl = null;
 
     const book = await prisma.book.findUnique({
@@ -102,11 +110,15 @@ export const updateBook = async (req, res) => {
       return res.status(404).json({ message: "Book not found" });
     }
 
-    const ability = defineAbilityFor(currentUser);
-    const isAllowed = ability.can('update', subject('Book', book));
+
+    const user = await findBy({ id: currentUser.id });
+
+    const ability = createAbility(user.permissions);
+
+    const isAllowed = ability.can("Edit", subject('Book', book))
 
     if (!isAllowed) {
-      return res.status(403).json({ message: "Forbidden: You do not have permission to update this book." });
+      return res.status(403).json({ message: "You are not allowed to edit this book" });
     }
 
     // Upload cover image to Cloudinary
@@ -137,15 +149,16 @@ export const updateBook = async (req, res) => {
       where: { id },
       data: validatedData,
     });
-    res.status(201).json({ message: "Book updated successfully" });
+    res.status(201).json({ message: "Book updated successfully", updatedBook });
 
   } catch (err) {
-    console.log("err", err);
     if (err instanceof z.ZodError) {
-      return res.status(400).json({ message: "Invalid request data" });
+      return res.status(400).json({
+        message: err
+      });
     }
 
-    res.status(500).json({ message: "Failed to update books" });
+    res.status(500).json({ message: err });
   }
 
 };
@@ -163,12 +176,24 @@ export const deleteBook = async (req, res) => {
       return res.status(404).json({ message: "Book not found" });
     }
 
-    const ability = defineAbilityFor(currentUser);
-    const isAllowed = ability.can('delete', subject('Book', book));
+    const user = await findBy({ id: currentUser.id });
+
+    const ability = createAbility(user.permissions);
+
+    const isAllowed = ability.can("Delete", subject('Book', book))
+
 
     if (!isAllowed) {
       return res.status(403).json({ message: "Forbidden: You do not have permission to delete this book." });
     }
+
+
+    // frist  delete related rental 
+    await prisma.rental.deleteMany({
+      where: { bookId: id },
+    });
+
+
 
 
     await prisma.book.delete({
@@ -188,12 +213,7 @@ export const getOwnSingleBook = async (req, res) => {
   const currentUser = req.user;
 
   try {
-    const ability = defineAbilityFor(currentUser);
-    const isAllowed = ability.can('get', 'ownSingleBook');
 
-    if (!isAllowed) {
-      return res.status(403).json({ message: 'Forbidden: You do not have permission to access this resource.' });
-    }
 
     const ownSingleBook = await prisma.book.findUnique({
       where: { id, ownerId: currentUser.id },
@@ -203,9 +223,10 @@ export const getOwnSingleBook = async (req, res) => {
       return res.status(404).json({ message: 'Book not found.' });
     }
 
+
     res.status(200).json({ data: ownSingleBook });
   } catch (err) {
-    console.error('Error fetching single book:', err); // Better logging
+    console.error('Error fetching single book:', err);
     res.status(500).json({ message: 'Failed to get the book.' });
   }
 };
@@ -213,48 +234,25 @@ export const getOwnSingleBook = async (req, res) => {
 
 export const getOwnBooks = async (req, res) => {
   const currentUser = req.user;
-  const ability = defineAbilityFor(currentUser);
-  const isAllowed = ability.can('get', "OwnBooks");
 
 
-  if (!isAllowed) {
-    return res.status(403).json({ message: "Forbidden: You do not have permission to get this book." });
+  const filterParams = JSON.parse(req.query.filter || '[]');
+  let whereClause = {}
+
+  if (filterParams.length > 0) {
+    whereClause = parseFilters(filterParams, 'Book');
   }
 
-  const {
-    id,
-    bookName,
-    category,
-    author,
-    quantity,
-    rentPrice,
-    globalFilter
-  } = req.query;
-
+  if (whereClause === null) {
+    return res.status(200).json({ data: [] });
+  }
 
   try {
-    // Build the filter criteria for the Book table
-    let bookFilter = {};
-    if (id) bookFilter.id = parseInt(id);
-    if (bookName) bookFilter.bookName = bookName;
-    if (category) bookFilter.category = category;
-    if (author) bookFilter.author = author;
-    if (quantity) bookFilter.quantity = quantity;
-    if (rentPrice) bookFilter.rentPrice = parseFloat(rentPrice);
-
-
 
     const options = {
       where: {
         ownerId: currentUser.id,
-        ...bookFilter,
-        ...(globalFilter ? {
-          OR: [
-            { bookName: { contains: globalFilter, mode: 'insensitive' } },
-            { author: { contains: globalFilter, mode: 'insensitive' } },
-            { category: { contains: globalFilter, mode: 'insensitive' } },
-          ],
-        } : {}),
+        ...whereClause,
       },
       include: {
         rentals: {
@@ -272,18 +270,7 @@ export const getOwnBooks = async (req, res) => {
     // Execute the query
     const books = await prisma.book.findMany(options);
 
-
-    const booksWithDetails = books.map(book => {
-      const rentalInfo = book.rentals.length > 0 ? book.rentals[0] : { status: 'Free', rentPrice: 0 };
-
-      return {
-        ...book,
-        rentalStatus: rentalInfo.status,
-        rentPrice: rentalInfo.rentPrice
-      };
-    });
-
-    res.status(200).json({ data: booksWithDetails });
+    res.status(200).json({ data: books });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Failed to get books" });
@@ -293,73 +280,37 @@ export const getOwnBooks = async (req, res) => {
 
 
 export const getAllBooks = async (req, res) => {
-
   const currentUser = req.user;
-  const ability = defineAbilityFor(currentUser);
-  const isAllowed = ability.can("get", "AllBooks");
-
-  if (!isAllowed) {
-    return res.status(403).json({ message: "Forbidden: You do not have permission to get all book." });
-  }
-
-  const {
-    id,
-    bookName,
-    category,
-    author,
-    username,
-    location,
-    globalFilter
-  } = req.query;
-
 
   try {
+    const user = await findBy({ id: currentUser.id });
 
-    let bookFilter = {};
+    const ability = createAbility(user.permissions);
 
-    if (id) bookFilter.id = parseInt(id);
-    if (bookName) bookFilter.bookName = bookName;
-    if (author) bookFilter.author = author;
-    if (category) bookFilter.category = category;
+    if (!ability.can("View", 'Book')) {
+      return res.status(403).json({ message: "Forbidden: You do not have permission to get all books." });
+    }
 
-    // Build the filter criteria for the Owner table
-    let ownerFilter = {};
-    if (username) ownerFilter.username = { contains: username, mode: 'insensitive' };
-    if (location) ownerFilter.location = { contains: location, mode: 'insensitive' };
 
-    // Construct the Prisma query options with conditional `where` clause
+    const filterParams = JSON.parse(req.query.filter || '[]');
+    let whereClause = {}
+
+    if (filterParams.length > 0) {
+      whereClause = parseFilters(filterParams, 'Book');
+    }
+
+    if (whereClause === null) {
+      return res.status(200).json({ data: [] });
+    }
+
     const options = {
-      where: {
-        ...bookFilter,
-        ...(globalFilter ? {
-          OR: [
-            { bookName: { contains: globalFilter, mode: 'insensitive' } },
-            { author: { contains: globalFilter, mode: 'insensitive' } },
-            { category: { contains: globalFilter, mode: 'insensitive' } },
-            {
-              owner: {
-                OR: [
-                  { username: { contains: globalFilter, mode: 'insensitive' } },
-                  { location: { contains: globalFilter, mode: 'insensitive' } },
-                ],
-              },
-            },
-          ],
-        } : {}),
-        ...(Object.keys(ownerFilter).length > 0 ? {
-          owner: {
-            AND: [
-              ...(ownerFilter.username ? [{ username: ownerFilter.username }] : []),
-              ...(ownerFilter.location ? [{ location: ownerFilter.location }] : []),
-            ],
-          },
-        } : {}),
-      },
+      where: whereClause,
       include: {
         owner: {
           select: {
             username: true,
             location: true,
+            email: true
           },
         },
         rentals: {
@@ -374,30 +325,32 @@ export const getAllBooks = async (req, res) => {
       },
     };
 
-    // Execute the query
     const books = await prisma.book.findMany(options);
+    res.status(200).json({ data: books });
 
-    const booksWithDetails = books.map(book => {
-      const rentalInfo = book.rentals.length > 0 ? book.rentals[0] : { status: 'Free', rentPrice: 0 };
-
-      return {
-        ...book,
-        username: book.owner.username,
-        rentalStatus: rentalInfo.status,
-        rentPrice: rentalInfo.rentPrice
-      };
-    });
-
-    res.status(200).json({ data: booksWithDetails });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({ message: "Failed to get Book list" });
   }
 };
 
 
 
+
 export const getBooks = async (req, res) => {
+  const currentUser = req.user;
+
+  const user = await findBy({ id: currentUser.id });
+
+  const ability = createAbility(user.permissions);
+
+  const isAllowed = ability.can("View", 'Book')
+
+
+
+  if (!isAllowed) {
+    return res.status(403).json({ message: "Forbidden: You do not have permission to get books." });
+  }
 
   try {
     const filters = {};
@@ -442,8 +395,12 @@ export const changeBookStatus = async (req, res) => {
   const id = parseInt(req.params.id)
   const { status } = req.body
 
-  const ability = defineAbilityFor(currentUser);
-  const isAllowed = ability.can("change", "bookStatus")
+  const user = await findBy({ id: currentUser.id });
+
+  const ability = createAbility(user.permissions);
+
+  const isAllowed = ability.can("Edit", 'Book')
+
 
   if (!isAllowed) {
     return res.status(403).json({ message: "Forbidden: You do not have permission to change book status." });
@@ -483,8 +440,12 @@ export const allFreeBooks = async (req, res) => {
     return res.status(400).json({ error: 'Owner ID is required' });
   }
 
-  const ability = defineAbilityFor(currentUser);
-  const isAllowed = ability.can('get', "allFreeBooks");
+  const user = await findBy({ id: currentUser.id });
+
+  const ability = createAbility(user.permissions);
+
+  const isAllowed = ability.can("View", 'Book')
+
 
   if (!isAllowed) {
     return res.status(403).json({ message: "Forbidden: You do not have permission to get the data." });
@@ -526,12 +487,8 @@ export const allFreeBooksForOwner = async (req, res) => {
     return res.status(400).json({ error: 'Owner ID is required' });
   }
 
-  const ability = defineAbilityFor(currentUser);
-  const isAllowed = ability.can('get', "ownFreeBooks");
 
-  if (!isAllowed) {
-    return res.status(403).json({ message: "Forbidden: You do not have permission to get the data." });
-  }
+
 
   try {
     // Fetch available books for the specified owner

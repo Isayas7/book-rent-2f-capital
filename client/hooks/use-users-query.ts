@@ -31,11 +31,13 @@ export const useUserLogoutQuery = () => {
     });
 };
 
+
+
 export const useOwnerQuery = () => {
     return useQuery({
-        queryKey: ["OwnerList"],
+        queryKey: ['ownerList'],
         queryFn: async () => {
-            const res = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/ownerList`, {
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/owner-list`, {
                 withCredentials: true,
             });
             return res.data
@@ -58,7 +60,7 @@ export const useChangeOwnerStatusQuery = () => {
             return res.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries("OwnerList");
+            queryClient.invalidateQueries({ queryKey: ['ownerList'] });
         },
     });
 };
@@ -70,7 +72,7 @@ export const useDeleteOwnerQuery = () => {
             return axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/${id}`, { withCredentials: true });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries("OwnerList");
+            queryClient.invalidateQueries({ queryKey: ['ownerList'] });
         },
     });
 };

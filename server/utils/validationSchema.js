@@ -1,5 +1,10 @@
-import { UserRole } from '@prisma/client';
 import { z } from 'zod';
+
+export const UserRole = {
+    ADMIN: "ADMIN",
+    OWNER: "OWNER",
+    CUSTOMER: "CUSTOMER"
+}
 
 export const registerSchema = z
     .object({
@@ -12,9 +17,7 @@ export const registerSchema = z
         phoneNumber: z.string().min(6, {
             message: "please enter phone Number",
         }),
-        role: z.enum([UserRole.ADMIN, UserRole.CUSTOMER, UserRole.OWNER], {
-            message: "Invalid role selected",
-        }),
+        roleId: z.number().positive(),
         password: z.string().min(6, {
             message: "Password must be at least 6 characters long"
         }),
@@ -55,3 +58,6 @@ export const updateBookSchema = z.object({
     rentPrice: z.number().int().min(0, "Rent price must be at least 0").optional(),
 });
 
+export const createRoleSchema = z.object({
+    name: z.string()
+});

@@ -9,10 +9,11 @@ import { useDeleteBookQuery } from "@/hooks/use-books-query";
 import { toast } from "react-toastify";
 
 export type ownerLiveBookColumnsTypes = {
+  rentals: any;
   id: string;
   bookNamber: string;
   bookName: string;
-  status: string;
+  rentalStatus: string;
   price: string;
   coverPhotoUrl: string
 };
@@ -25,7 +26,7 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
       size: 20,
     },
     {
-      accessorKey: "bookNamber",
+      accessorKey: "bookNumber",
       header: "Book no.",
       size: 30,
       Cell: ({ renderedCellValue }) => (
@@ -59,13 +60,13 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
       ),
     },
     {
-      accessorKey: "status",
+      accessorKey: "rentals.status",
       header: "Status",
       size: 40,
       Cell: ({ row }) => {
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {row.original.status === "BORROWED" ?
+            {row.original.rentals.status === "BORROWED" ?
 
               <Box
                 sx={{
@@ -101,8 +102,7 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
                 />
               </Box>
             }
-
-            <Box>{row.original.status === "BORROWED" ? "Reneted" : "Free"}</Box>
+            <Box>{row.original.rentals.status === "BORROWED" ? "Rented" : "Free"}</Box>
           </Box>
         )
       }
@@ -128,7 +128,7 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <Link href="/dashboard/bookUpload">
+              <Link href={`/dashboard/bookUpload/update/${row.original.id}`}>
 
                 <EditOutlinedIcon sx={{ cursor: "pointer" }} />
               </Link>

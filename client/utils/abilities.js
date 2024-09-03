@@ -3,13 +3,17 @@ import { defineAbility } from '@casl/ability';
 
 export default function defineAbilityFor(user) {
     return defineAbility((can) => {
-        if (user?.role === UserRole.ADMIN) {
+        if (user?.role === UserRole.bookAdmin) {
             can("view", "dashboard");
             can("view", "books");
-            can("view", "owners");
             can("view", "other");
-
-        } else if (user?.role === UserRole.OWNER) {
+        }
+        else if (user?.role === UserRole.userAdmin) {
+            can("view", "owners");
+            can("view", "roles");
+            can("view", "other");
+        }
+        else if (user?.role === UserRole.owner) {
             can("view", "dashboard");
             can("view", "bookUpload");
             can("view", "other");

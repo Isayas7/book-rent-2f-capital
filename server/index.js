@@ -5,6 +5,7 @@ import authRoute from "./routes/auth.route.js";
 import bookRoute from "./routes/book.route.js";
 import userRoute from "./routes/user.route.js";
 import rentalRoute from "./routes/rental.route.js";
+import roleRoute from "./routes/role.route.js";
 
 
 const app = express();
@@ -18,10 +19,9 @@ app.use("/api/auth", authRoute);
 app.use("/api/book", bookRoute);
 app.use("/api/user", userRoute);
 app.use("/api/rental", rentalRoute);
-
-
+app.use("/api/role", roleRoute);
 
 
 app.listen(8000, () => {
-  console.log("Connected to backend");
+  console.log("server running on port 8000");
 });

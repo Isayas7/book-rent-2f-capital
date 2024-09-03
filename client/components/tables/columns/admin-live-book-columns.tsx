@@ -4,8 +4,11 @@ import { MRT_ColumnDef } from "material-react-table";
 import Image from "next/image";
 
 export type adminLiveBookColumnsTypes = {
+  rentals: any;
+  owner: any;
   no: string;
   bookNamber: string;
+  email: string;
   username: string;
   rentalStatus: string;
   price: string;
@@ -20,7 +23,7 @@ export const adminLiveBookColumns: MRT_ColumnDef<adminLiveBookColumnsTypes>[] =
       size: 40,
     },
     {
-      accessorKey: "bookNamber",
+      accessorKey: "bookNumber",
       header: "Book no.",
       size: 40,
       Cell: ({ row }) => (
@@ -37,10 +40,11 @@ export const adminLiveBookColumns: MRT_ColumnDef<adminLiveBookColumnsTypes>[] =
       ),
     },
     {
-      accessorKey: "username",
+      accessorKey: "owner.username",
       header: "Owner",
       size: 150,
       Cell: ({ row }) => {
+        const username = row.original?.owner.email?.split('@');
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Image
@@ -50,21 +54,19 @@ export const adminLiveBookColumns: MRT_ColumnDef<adminLiveBookColumnsTypes>[] =
               height={24}
               style={{ borderRadius: "50%", border: "1px solid grey" }}
             />
-            <Box>{row.original.username}</Box>
+            <Box>{row.original.owner.username || <>&ndash;</>}</Box>
           </Box>
         )
       }
-
-
     },
     {
-      accessorKey: "rentalStatus",
+      accessorKey: "rentals.status",
       header: "Status",
       size: 150,
       Cell: ({ row }) => {
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {row.original.rentalStatus === "BORROWED" ?
+            {row.original.rentals.status === "BORROWED" ?
 
               <Box
                 sx={{
@@ -101,7 +103,7 @@ export const adminLiveBookColumns: MRT_ColumnDef<adminLiveBookColumnsTypes>[] =
               </Box>
             }
 
-            <Box>{row.original.rentalStatus === "BORROWED" ? "Reneted" : "Free"}</Box>
+            <Box>{row.original.rentals.status === "BORROWED" ? "Rented" : "Free"}</Box>
           </Box>
         )
       }

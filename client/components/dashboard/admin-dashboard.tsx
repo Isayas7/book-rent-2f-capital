@@ -15,8 +15,10 @@ const AdminDashboard = () => {
   const { data } = getRentalStaticsQuery()
   const { data: freeBooks } = getFreeBooksQuery()
 
+  console.log("data", data)
+
   return (
-    <Box sx={{ display: "flex", gap: 2 }}>
+    <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2 }}>
       {/* Left */}
       <Box
         sx={{
@@ -32,7 +34,11 @@ const AdminDashboard = () => {
         <Typography sx={{ fontSize: 14, opacity: 0.6 }}>
           Tue, 14 Nov, 2024, 11:30
         </Typography>
+
+        {/* REVENUE */}
         <Revenue data={data} />
+
+        {/* CustomPie */}
         <Box
           sx={{
             mt: 3,
@@ -58,8 +64,8 @@ const AdminDashboard = () => {
           columns={adminLiveBookColumns}
           maxHeight="300px"
           title="Live Book status"
-          fetchUrl="api/book/allBooks"
-          queryKey="Books"
+          fetchUrl="api/book/all-books"
+          queryKey="allBooks"
         />
 
         <Box

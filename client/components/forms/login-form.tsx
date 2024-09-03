@@ -12,7 +12,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 const LoginForm = () => {
-  const { dispatch } = useContext(AuthContext);
+  const { dispatch, user } = useContext(AuthContext);
   const router = useRouter()
 
   const { mutateAsync: loginUser, isSuccess, isPending, isError, error } = useUserLoginQuery();
@@ -34,7 +34,11 @@ const LoginForm = () => {
 
           dispatch({ type: "LOGIN_SUCCESS", payload: result.data });
           reset();
-          router.push("/dashboard");
+          if (user?.role === "userAdmin") {
+            router.push("/dashboard/owners")
+          } else if (user?.role === "bookAdmin" || user?.role === "owner") {
+            router.push("/dashboard")
+          }
         },
         onError: (error) => {
           const errorResponse = (error as any)?.response?.data || "An unknown error occurred";

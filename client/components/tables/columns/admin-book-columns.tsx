@@ -8,9 +8,11 @@ import { useChangeBookStatusQuery } from "@/hooks/use-books-query";
 import { toast } from "react-toastify";
 
 export type adminBookColumnsTypes = {
+  owner: any;
   id: string;
   author: string;
   username: string;
+  email: string;
   category: string;
   bookName: string;
   status: string;
@@ -31,21 +33,24 @@ export const adminBookColumns: MRT_ColumnDef<adminBookColumnsTypes>[] = [
     size: 40,
   },
   {
-    accessorKey: "username",
+    accessorKey: "owner.username",
     header: "Owner",
     size: 150,
-    Cell: ({ row }) => (
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <Image
-          src={row.original.coverPhotoUrl || "/woman.png"}
-          alt="woman"
-          width={24}
-          height={24}
-          style={{ borderRadius: "50%", border: "1px solid grey" }}
-        />
-        <Box>{row.original.username}</Box>
-      </Box>
-    ),
+    Cell: ({ row }) => {
+      const username = row.original?.owner.email?.split('@');
+      return (
+        < Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Image
+            src={row.original.coverPhotoUrl || "/woman.png"}
+            alt="woman"
+            width={24}
+            height={24}
+            style={{ borderRadius: "50%", border: "1px solid grey" }}
+          />
+          <Box>{row.original.owner.username || <>&ndash;</>}</Box>
+        </Box >
+      )
+    },
   },
   {
     accessorKey: "category",
@@ -55,6 +60,7 @@ export const adminBookColumns: MRT_ColumnDef<adminBookColumnsTypes>[] = [
   {
     accessorKey: "bookName",
     header: "Book Name ",
+    filterFn: 'contains',
     size: 200,
   },
   {

@@ -7,9 +7,11 @@ import { AuthContext } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
   const router = useRouter()
-  if (user) {
+  if (user?.role === "userAdmin") {
+    router.push("/dashboard/owners")
+  } else if (user?.role === "bookAdmin" || user?.role === "owner") {
     router.push("/dashboard")
   }
   return (
@@ -20,11 +22,12 @@ export default function Login() {
           <Box
             sx={{
               backgroundColor: "#171B36",
-              display: "flex",
+              display: { xs: "none", sm: "flex" },
               justifyContent: "center",
               alignItems: "center",
               flex: 1,
               height: "100vh",
+
             }}
           >
             <LocalLibraryIcon sx={{ width: 200, height: 200 }} />

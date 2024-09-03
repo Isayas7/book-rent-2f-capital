@@ -8,13 +8,14 @@ import { useContext } from "react";
 
 
 export default function Dashboard() {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
   const router = useRouter()
+
   return (
     <>
-      {user?.role === UserRole.ADMIN ? (
+      {user?.role === UserRole.bookAdmin || user?.role === UserRole.userAdmin ? (
         <AdminDashboard />
-      ) : user?.role === UserRole.OWNER ? (
+      ) : user?.role === UserRole.owner ? (
         <OwnerDashboard />
       ) : (
         router.push("/login")

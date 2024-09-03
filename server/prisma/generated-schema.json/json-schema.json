@@ -1,0 +1,340 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "createdAt": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "email": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "username": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "originalType": "String"
+        },
+        "phoneNumber": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "originalType": "String"
+        },
+        "password": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "location": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "wallet": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "originalType": "Float",
+          "default": 0
+        },
+        "status": {
+          "type": "string",
+          "originalType": "UserStatus",
+          "default": "APPROVE",
+          "enum": [
+            "APPROVE",
+            "APPROVED"
+          ]
+        },
+        "books": {
+          "type": "array",
+          "originalType": "Book",
+          "items": {
+            "$ref": "#/definitions/Book"
+          }
+        },
+        "rentals": {
+          "type": "array",
+          "originalType": "Rental",
+          "items": {
+            "$ref": "#/definitions/Rental"
+          }
+        },
+        "roleId": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "role": {
+          "$ref": "#/definitions/Role"
+        }
+      },
+      "required": [
+        "email",
+        "password",
+        "location",
+        "roleId"
+      ]
+    },
+    "Book": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "createdAt": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "bookName": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "author": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "category": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "quantity": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "rentPrice": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "coverPhotoUrl": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "originalType": "String"
+        },
+        "status": {
+          "type": "string",
+          "originalType": "BookStatus",
+          "default": "APPROVE",
+          "enum": [
+            "APPROVE",
+            "APPROVED"
+          ]
+        },
+        "isAvailable": {
+          "type": "boolean",
+          "originalType": "Boolean",
+          "default": true
+        },
+        "ownerId": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "owner": {
+          "$ref": "#/definitions/User"
+        },
+        "rentals": {
+          "type": "array",
+          "originalType": "Rental",
+          "items": {
+            "$ref": "#/definitions/Rental"
+          }
+        }
+      },
+      "required": [
+        "bookName",
+        "author",
+        "category",
+        "quantity",
+        "rentPrice",
+        "ownerId"
+      ]
+    },
+    "Rental": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "transactionDate": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "originalType": "RentStatus",
+          "default": "BORROWED",
+          "enum": [
+            "BORROWED",
+            "RETURNED"
+          ]
+        },
+        "quantity": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "rentPrice": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "returnDate": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "bookId": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "renterId": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "book": {
+          "$ref": "#/definitions/Book"
+        },
+        "renter": {
+          "$ref": "#/definitions/User"
+        }
+      },
+      "required": [
+        "quantity",
+        "rentPrice",
+        "returnDate",
+        "bookId",
+        "renterId"
+      ]
+    },
+    "Role": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "name": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "permissions": {
+          "type": "array",
+          "originalType": "RoleOnPermission",
+          "items": {
+            "$ref": "#/definitions/RoleOnPermission"
+          }
+        },
+        "users": {
+          "type": "array",
+          "originalType": "User",
+          "items": {
+            "$ref": "#/definitions/User"
+          }
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "Permission": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "action": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "subject": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "conditions": {
+          "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+          ],
+          "originalType": "Json"
+        },
+        "roles": {
+          "type": "array",
+          "originalType": "RoleOnPermission",
+          "items": {
+            "$ref": "#/definitions/RoleOnPermission"
+          }
+        }
+      },
+      "required": [
+        "action",
+        "subject"
+      ]
+    },
+    "RoleOnPermission": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "roleId": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "permissionId": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "permission": {
+          "$ref": "#/definitions/Permission"
+        }
+      },
+      "required": [
+        "roleId",
+        "permissionId"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "user": {
+      "$ref": "#/definitions/User"
+    },
+    "book": {
+      "$ref": "#/definitions/Book"
+    },
+    "rental": {
+      "$ref": "#/definitions/Rental"
+    },
+    "role": {
+      "$ref": "#/definitions/Role"
+    },
+    "permission": {
+      "$ref": "#/definitions/Permission"
+    },
+    "roleOnPermission": {
+      "$ref": "#/definitions/RoleOnPermission"
+    }
+  }
+}

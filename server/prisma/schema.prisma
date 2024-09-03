@@ -1,11 +1,13 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
+}
+
+generator jsonSchema {
+  provider                 = "prisma-json-schema-generator"
+  output                   = "./generated-schema.json"
+  keepRelationScalarFields = "true"
+  includeRequiredFields    = "true"
+  persistOriginalType      = "true"
 }
 
 datasource db {
@@ -41,12 +43,13 @@ model User {
   username    String?
   phoneNumber String?
   password    String
-  role        UserRole
   location    String
   wallet      Float?     @default(0.00)
   status      UserStatus @default(APPROVE)
   books       Book[]
   rentals     Rental[]
+  roleId      Int
+  role        Role       @relation(fields: [roleId], references: [id])
 }
 
 model Book {
@@ -61,7 +64,7 @@ model Book {
   status        BookStatus @default(APPROVE)
   isAvailable   Boolean    @default(true)
   ownerId       Int
-  owner         User       @relation(fields: [ownerId], references: [id])
+  owner         User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   rentals       Rental[]
 }
 
@@ -74,6 +77,33 @@ model Rental {
   returnDate      DateTime
   bookId          Int
   renterId        Int
-  book            Book       @relation(fields: [bookId], references: [id])
-  renter          User       @relation(fields: [renterId], references: [id])
+  book            Book       @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  renter          User       @relation(fields: [renterId], references: [id], onDelete: Cascade)
+}
+
+model Role {
+  id          Int                @id @default(autoincrement())
+  name        String             @unique
+  permissions RoleOnPermission[]
+  users       User[]
+}
+
+model Permission {
+  id         Int                @id @default(autoincrement())
+  action     String
+  subject    String
+  conditions Json?
+  roles      RoleOnPermission[]
+}
+
+model RoleOnPermission {
+  id Int @id @default(autoincrement())
+
+  roleId Int
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  permissionId Int
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
 }

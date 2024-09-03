@@ -7,6 +7,7 @@ import ApiOutlinedIcon from "@mui/icons-material/ApiOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import BookmarksOutlinedIcon from '@mui/icons-material/BookmarksOutlined';
+import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 
 type AdminLink = {
   title: string;
@@ -46,6 +47,13 @@ export const sideBarMenu: AdminLink[] = [
     disable: false
   },
   {
+    title: "Roles",
+    path: "/dashboard/roles",
+    icon: <VpnKeyOutlinedIcon />,
+    id: "roles",
+    disable: false
+  },
+  {
     title: "Book Upload",
     path: "/dashboard/bookUpload",
     icon: <BookmarkAddOutlinedIcon />,
@@ -81,3 +89,4 @@ export const sideBarMenu: AdminLink[] = [
     disable: false
   },
 ];
+

@@ -17,7 +17,7 @@ const OwnerDashboard = () => {
   const now = new Date();
   const formattedDate = format(now, 'EEE, dd MMM, yyyy, HH:mm');
   return (
-    <Box sx={{ display: "flex", gap: 2 }}>
+    <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2 }}>
       {/* Left */}
       <Box
         sx={{
@@ -57,8 +57,8 @@ const OwnerDashboard = () => {
           columns={ownerLiveBookColumns}
           maxHeight="300px"
           title="Live Book status"
-          fetchUrl="/api/book/ownBooks"
-          queryKey="ownerBooks"
+          fetchUrl="/api/book/own-books"
+          queryKey="ownBooks"
         />
         <Box
           sx={{

@@ -1,24 +1,33 @@
+import { createAbility } from "../casl/createAbility.js";
+import { findBy } from "../casl/findUser.js";
 import prisma from "../utils/connect.js";
 import { z } from "zod";
-import defineAbilityFor from "../utils/abilities.js";
-import { UserRole } from "@prisma/client";
 
 export const getOwners = async (req, res) => {
     const currentUser = req.user;
 
 
     try {
-        const ability = defineAbilityFor(currentUser);
-        const isAllowed = ability.can('get', "Owners");
+        const user = await findBy({ id: currentUser.id });
+
+        const ability = createAbility(user.permissions);
+
+        const isAllowed = ability.can("View", 'User')
 
 
         if (!isAllowed) {
             return res.status(403).json({ message: "Forbidden: You do not have permission to get Owners list." });
         }
 
+        const role = await prisma.role.findUnique({
+            where: {
+                name: "owner"
+            }
+        })
+
         const ownersList = await prisma.user.findMany({
             where: {
-                role: UserRole.OWNER
+                roleId: role.id
             },
             include: {
                 _count: {
@@ -35,7 +44,7 @@ export const getOwners = async (req, res) => {
 
         res.status(200).json({ data: ownersWithBookCount });
     } catch (err) {
-        res.status(500).json({ message: "Failed to get users" });
+        res.status(500).json({ message: err });
     }
 };
 
@@ -46,19 +55,23 @@ export const ownerStatus = async (req, res) => {
     const { status } = req.body
 
     try {
-        const user = await prisma.user.findUnique({
+        const foundUser = await prisma.user.findUnique({
             where: { id },
         });
 
-        if (!user) {
+        if (!foundUser) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const ability = defineAbilityFor(currentUser);
-        const isAllowed = ability.can("change", "OwnerStatus")
+        const user = await findBy({ id: currentUser.id });
+
+        const ability = createAbility(user.permissions);
+
+        const isAllowed = ability.can("Edit", 'User')
+
 
         if (!isAllowed) {
-            return res.status(403).json({ message: "Forbidden: You do not have permission to change owners status." });
+            return res.status(403).json({ message: "You do not have permission to change owners status." });
         }
 
         const ownerStatus = await prisma.user.update({
@@ -80,11 +93,16 @@ export const ownerStatus = async (req, res) => {
 export const deleteOwner = async (req, res) => {
     const id = parseInt(req.params.id);
     const currentUser = req.user;
-    const ability = defineAbilityFor(currentUser);
-    const isAllowed = ability.can('delete', "Owner");
+
+    const user = await findBy({ id: currentUser.id });
+
+    const ability = createAbility(user.permissions);
+
+    const isAllowed = ability.can("Delete", 'User')
+
 
     if (!isAllowed) {
-        return res.status(403).json({ message: "Forbidden: You do not have permission to delete this owner." });
+        return res.status(403).json({ message: "You have not permission to Delete this user." });
     }
 
     try {
@@ -96,7 +114,7 @@ export const deleteOwner = async (req, res) => {
             return res.status(404).json({ message: "Owner not found" });
         }
 
-        // Optional: Delete related books
+        // frist delete related books
         await prisma.book.deleteMany({
             where: { ownerId: id },
         });
@@ -107,7 +125,6 @@ export const deleteOwner = async (req, res) => {
 
         res.status(200).json({ message: "Owner deleted" });
     } catch (err) {
-        console.log(err);
         res.status(500).json({ message: "Failed to delete owner" });
     }
 };
