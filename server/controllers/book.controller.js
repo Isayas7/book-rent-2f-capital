@@ -100,6 +100,7 @@ export const updateBook = async (req, res) => {
 
 
 
+
     let coverUrl = null;
 
     const book = await prisma.book.findUnique({
@@ -288,7 +289,7 @@ export const getAllBooks = async (req, res) => {
     const ability = createAbility(user.permissions);
 
     if (!ability.can("View", 'Book')) {
-      return res.status(403).json({ message: "Forbidden: You do not have permission to get all books." });
+      return res.status(403).json({ message: "You do not have permission to get all books." });
     }
 
 
@@ -300,7 +301,7 @@ export const getAllBooks = async (req, res) => {
     }
 
     if (whereClause === null) {
-      return res.status(200).json({ data: [] });
+      return res.status(201).json({ data: [] });
     }
 
     const options = {
@@ -326,10 +327,9 @@ export const getAllBooks = async (req, res) => {
     };
 
     const books = await prisma.book.findMany(options);
-    res.status(200).json({ data: books });
+    res.status(201).json({ data: books });
 
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: "Failed to get Book list" });
   }
 };

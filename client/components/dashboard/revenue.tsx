@@ -14,6 +14,7 @@ interface RevenueProps {
 }
 
 const Revenue: React.FC<RevenueProps> = ({ data }) => {
+  console.log("data", data)
   return (
     <Box
       sx={{

@@ -15,8 +15,15 @@ export const rentBook = async (req, res) => {
             where: { id: bookId },
         });
 
+
         if (!book) {
             return res.status(404).json({ error: "Book not found" });
+        }
+
+        if (quantity <= 0) {
+            return res.status(400).json({
+                message: "Quantity must be greater than 0",
+            });
         }
 
         if (book.quantity < quantity) {
@@ -32,7 +39,7 @@ export const rentBook = async (req, res) => {
         });
 
         if (book.status !== BookStatus.APPROVED || owner.status !== UserStatus.APPROVED) {
-            return res.status(400).json({ error: "Book or owner not approved" });
+            return res.status(400).json({ message: "Book or owner not approved." });
         }
 
         const rentPrice = book.rentPrice * quantity;
@@ -53,6 +60,8 @@ export const rentBook = async (req, res) => {
         if (newRental) {
             // Calculate the remaining quantity
             const remainingQuantity = book.quantity - quantity;
+
+            console.log("remainingQuantity", remainingQuantity);
 
             // Update book quantity and isAvailable status
             const updatedBook = await prisma.book.update({
@@ -75,7 +84,7 @@ export const rentBook = async (req, res) => {
             });
         }
 
-        res.status(201).json({ message: "Rental created successfully", rental: newRental });
+        res.status(201).json({ message: "Rental created successfully", newRental });
 
     } catch (err) {
         // Handle validation errors
@@ -237,7 +246,7 @@ export const allRentalStatics = async (req, res) => {
 
     const ability = createAbility(user.permissions);
 
-    const isAllowed = ability.can("View", 'Rental',)
+    const isAllowed = ability.can("View", 'Book',)
 
     if (!isAllowed) {
         return res.status(403).json({ message: "Forbidden: You do not have permission to get revenue data." });

@@ -4,8 +4,8 @@ import prisma from "../utils/connect.js";
 import { loginSchema, registerSchema } from "../utils/validationSchema.js";
 import { z } from "zod";
 
-export const register = async (req, res) => {
 
+export const register = async (req, res) => {
   try {
     // HASH THE PASSWORD
     const validatedData = registerSchema.parse(req.body);
@@ -15,6 +15,9 @@ export const register = async (req, res) => {
     const user = await prisma.user.findUnique({
       where: { email },
     });
+    console.log(user)
+
+
 
     if (user) return res.status(400).json({ message: "user already exist!" });
 
@@ -42,6 +45,7 @@ export const register = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+  console.log("login")
 
 
   try {
@@ -83,8 +87,8 @@ export const login = async (req, res) => {
     res
       .cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'None',
+        // secure: process.env.NODE_ENV === 'production',
+        // sameSite: 'None',
         maxAge: age,
       })
       .status(200)
@@ -94,7 +98,7 @@ export const login = async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: "Invalid requested data" });
     }
-    res.status(500).json({ message: "Failed to login, try again!" });
+    res.status(500).json({ message: err });
   }
 };
 

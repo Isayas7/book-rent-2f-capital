@@ -8,7 +8,7 @@ import rentalRoute from "./routes/rental.route.js";
 import roleRoute from "./routes/role.route.js";
 
 
-const app = express();
+export const app = express();
 
 // MIDDLEWARE
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));

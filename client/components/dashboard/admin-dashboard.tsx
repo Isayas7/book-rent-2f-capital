@@ -8,14 +8,16 @@ import {
 
 } from "@/components/tables/columns/admin-live-book-columns";
 import GenericTable from "@/components/tables/custom-table";
+import { format } from 'date-fns';
 import { getFreeBooksQuery, getRentalStaticsQuery } from "@/hooks/use-books-query";
 
 
 const AdminDashboard = () => {
   const { data } = getRentalStaticsQuery()
   const { data: freeBooks } = getFreeBooksQuery()
+  const now = new Date();
+  const formattedDate = format(now, 'EEE, dd MMM, yyyy, HH:mm');
 
-  console.log("data", data)
 
   return (
     <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2 }}>
@@ -32,7 +34,7 @@ const AdminDashboard = () => {
           This Month statistics
         </Typography>
         <Typography sx={{ fontSize: 14, opacity: 0.6 }}>
-          Tue, 14 Nov, 2024, 11:30
+          {formattedDate}
         </Typography>
 
         {/* REVENUE */}
