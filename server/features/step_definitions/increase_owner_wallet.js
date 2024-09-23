@@ -55,4 +55,3 @@ Then('the owner\'s wallet should not be increased', async function () {
     const updatedOwner = await prisma.user.findUnique({ where: { id: this.ownerId } });
     assert.strictEqual(updatedOwner.wallet, initialWallet);
 });
-

@@ -25,16 +25,21 @@ export const adminBookColumns: MRT_ColumnDef<adminBookColumnsTypes>[] = [
   {
     accessorKey: "id",
     header: "No.",
+    enableColumnFilter: false,
     size: 40,
   },
   {
     accessorKey: "author",
     header: "Author",
+    filterFn: "contains",
+    columnFilterModeOptions: ['equals', 'notEquals', 'contains', 'startsWith', 'endsWith'],
     size: 40,
   },
   {
     accessorKey: "owner.username",
     header: "Owner",
+    filterFn: "contains",
+    columnFilterModeOptions: ['equals', 'notEquals', 'contains', 'startsWith', 'endsWith'],
     size: 150,
     Cell: ({ row }) => {
       const username = row.original?.owner.email?.split('@');
@@ -55,17 +60,22 @@ export const adminBookColumns: MRT_ColumnDef<adminBookColumnsTypes>[] = [
   {
     accessorKey: "category",
     header: "Category",
+    filterFn: "contains",
+    columnFilterModeOptions: ['equals', 'notEquals', 'contains', 'startsWith', 'endsWith'],
     size: 200,
   },
   {
     accessorKey: "bookName",
     header: "Book Name ",
-    filterFn: 'contains',
+    filterFn: "contains",
+    columnFilterModeOptions: ['equals', 'notEquals', 'contains', 'startsWith', 'endsWith'],
     size: 200,
   },
   {
     accessorKey: "status",
     header: "Status",
+    filterFn: "equals",
+    columnFilterModeOptions: ['equals', 'notEquals',],
     size: 150,
 
     Cell: ({ row }) => {

@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useDeleteBookQuery } from "@/hooks/use-books-query";
 import { toast } from "react-toastify";
+import MenuItem from '@mui/material/MenuItem';
 
 export type ownerLiveBookColumnsTypes = {
   rentals: any;
@@ -24,11 +25,15 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
       accessorKey: "id",
       header: "No.",
       size: 20,
+      enableColumnFilterModes: false,
     },
     {
+
       accessorKey: "bookNumber",
       header: "Book no.",
       size: 30,
+      filterFn: "equals",
+      columnFilterModeOptions: ['equals', 'notEquals', "lessThan", "greaterThan"],
       Cell: ({ renderedCellValue }) => (
         <Box
           sx={{
@@ -38,31 +43,39 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
             textAlign: "center",
           }}
         >
-          {"0123"}
+          {renderedCellValue || "0123"}
         </Box>
       ),
+
     },
     {
       accessorKey: "bookName",
       header: "Book Name",
+      filterFn: "contains",
+      columnFilterModeOptions: ['equals', 'notEquals', 'contains', 'startsWith', 'endsWith'],
       size: 80,
-      Cell: ({ row }) => (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Image
-            src={row.original.coverPhotoUrl || "/woman.png"}
-            alt="woman"
-            width={24}
-            height={24}
-            style={{ borderRadius: "50%", border: "1px solid grey" }}
-          />
-          <Box>{row.original.bookName}</Box>
-        </Box>
-      ),
+      Cell: ({ row }) => {
+        return (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Image
+              src={row.original.coverPhotoUrl || "/woman.png"}
+              alt="woman"
+              width={24}
+              height={24}
+              style={{ borderRadius: "50%", border: "1px solid grey" }}
+            />
+            <Box>{row.original.bookName}</Box>
+          </Box>
+        )
+
+      },
     },
     {
       accessorKey: "rentals.status",
       header: "Status",
       size: 40,
+      filterFn: "equals",
+      columnFilterModeOptions: ['equals', 'notEquals',],
       Cell: ({ row }) => {
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -111,11 +124,14 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
       accessorKey: "rentPrice",
       header: "Price",
       size: 40,
+      filterFn: "equals",
+      columnFilterModeOptions: ['equals', 'notEquals', "lessThan", "greaterThan", "lessThanOrEqual", "greaterThanOrEqual"],
     },
     {
       accessorKey: "action",
       header: "Action ",
       size: 100,
+      enableColumnFilter: false,
       Cell: ({ row }) => {
         const { mutate: deleteBook } = useDeleteBookQuery();
         const handleDelete = () => {
@@ -128,10 +144,14 @@ export const ownerLiveBookColumns: MRT_ColumnDef<ownerLiveBookColumnsTypes>[] =
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <Link href={`/dashboard/bookUpload/update/${row.original.id}`}>
+              <div suppressHydrationWarning>
+                {typeof window !== 'undefined' && <Link href={`/dashboard/bookUpload/update/${row.original.id}`}>
 
-                <EditOutlinedIcon sx={{ cursor: "pointer" }} />
-              </Link>
+                  <EditOutlinedIcon sx={{ cursor: "pointer" }} />
+                </Link>
+                }
+              </div>
+
               <DeleteIcon sx={{ color: "red", cursor: "pointer" }} onClick={handleDelete} />
             </Box>
           </Box>

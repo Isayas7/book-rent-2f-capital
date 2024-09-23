@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
 import React, { createContext, useEffect, useReducer, ReactNode } from 'react';
 
 interface User {
-    email: String,
-    role: String,
+    email: string;
+    role: string;
 }
 
 interface AuthState {
@@ -21,13 +21,22 @@ type AuthAction =
 
 const isBrowser = typeof window !== 'undefined';
 
+const getUserFromLocalStorage = (): User | null => {
+    if (!isBrowser) return null;
+    try {
+        const storedUser = localStorage.getItem('user');
+        return storedUser ? JSON.parse(storedUser) : null;
+    } catch (error) {
+        console.error('Error parsing user data from localStorage:', error);
+        return null;
+    }
+};
+
 const INITIAL_STATE: AuthState = {
-    user: isBrowser ? JSON.parse(localStorage.getItem('user') || 'null') || null : null,
+    user: getUserFromLocalStorage(),
     loading: false,
     error: null,
 };
-
-
 
 export const AuthContext = createContext<{
     user: User | null;
@@ -39,29 +48,13 @@ export const AuthContext = createContext<{
 const AuthReducer = (state: AuthState, action: AuthAction): AuthState => {
     switch (action.type) {
         case 'LOGIN_START':
-            return {
-                user: null,
-                loading: true,
-                error: null,
-            };
+            return { user: null, loading: true, error: null };
         case 'LOGIN_SUCCESS':
-            return {
-                user: action.payload,
-                loading: false,
-                error: null,
-            };
+            return { user: action.payload, loading: false, error: null };
         case 'LOGIN_FAILURE':
-            return {
-                user: null,
-                loading: false,
-                error: action.payload,
-            };
+            return { user: null, loading: false, error: action.payload };
         case 'LOGOUT':
-            return {
-                user: null,
-                loading: false,
-                error: null,
-            };
+            return { user: null, loading: false, error: null };
         default:
             return state;
     }
@@ -75,7 +68,9 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
     const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
 
     useEffect(() => {
-        localStorage.setItem('user', JSON.stringify(state.user));
+        if (isBrowser) {
+            localStorage.setItem('user', JSON.stringify(state.user));
+        }
     }, [state.user]);
 
     return (
@@ -85,8 +80,7 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
                 loading: state.loading,
                 error: state.error,
                 dispatch,
-            }
-            }
+            }}
         >
             {children}
         </AuthContext.Provider>

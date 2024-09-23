@@ -90,9 +90,14 @@ const LoginForm = () => {
 
       <Box sx={{ display: "flex", justifyContent: "center" }}>
         <Typography>Have not have an account?</Typography>
-        <Link href="/" style={{ color: "#0f4ec2" }}>
-          Sign up
-        </Link>
+        <div suppressHydrationWarning>
+          {typeof window !== 'undefined' && <Link href="/" style={{ color: "#0f4ec2" }}>
+            Sign up
+          </Link>
+          }
+        </div>
+
+
       </Box>
     </form>
   );

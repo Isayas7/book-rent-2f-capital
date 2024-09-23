@@ -56,12 +56,22 @@ function convertCondition(opervalue, val, type) {
     switch (opervalue) {
         case 'equals':
             return { equals: convertValue(val, type) };
+        case 'notEquals':
+            return { not: convertValue(val, type) };
         case 'contains':
-            return { contains: val, mode: 'insensitive' };
+            return { contains: convertValue(val, type), mode: 'insensitive' };
         case 'startsWith':
-            return { startsWith: val };
+            return { startsWith: convertValue(val, type) };
         case 'endsWith':
-            return { endsWith: val };
+            return { endsWith: convertValue(val, type) };
+        case 'greaterThan':
+            return { gt: convertValue(val, type) };
+        case 'lessThan':
+            return { lt: convertValue(val, type) };
+        case 'greaterThanOrEqual':
+            return { gte: convertValue(val, type) };
+        case 'lessThanOrEqual':
+            return { lte: convertValue(val, type) };
         default:
             return val;
     }

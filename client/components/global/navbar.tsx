@@ -13,7 +13,7 @@ const Navbar = () => {
 
   return (
     <Box sx={{ backgroundColor: "var(--bgCard)", p: 2, borderRadius: 2, fontSize: 18 }}>
-      {user?.role === UserRole.bookAdmin || UserRole.userAdmin ? "Admin/" : user?.role === UserRole.owner ? "Owner/" : ""}
+      {user?.role === UserRole.bookAdmin ? "bookAdmin/" : user?.role === UserRole.userAdmin ? "userAdmin/" : user?.role === UserRole.owner ? "Owner/" : ""}
       {pathname === "/dashboard" ? "dashboard" : displayPath}
     </Box>
   );

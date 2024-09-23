@@ -25,6 +25,7 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
   {
     accessorKey: "id",
     header: "No.",
+    enableColumnFilter: false,
     size: 40,
   },
 
@@ -32,6 +33,8 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
     accessorKey: "username",
     header: "Owner",
     size: 150,
+    filterFn: "contains",
+    columnFilterModeOptions: ['equals', 'notEquals', 'contains', 'startsWith', 'endsWith'],
     Cell: ({ row }) => {
       const username = row.original?.email?.split('@');
       return (
@@ -57,6 +60,8 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
     accessorKey: "location",
     header: "Location",
     size: 200,
+    filterFn: "contains",
+    columnFilterModeOptions: ['equals', 'notEquals', 'contains', 'startsWith', 'endsWith'],
   },
   {
     accessorKey: "status",
@@ -110,6 +115,7 @@ export const adminOwnerColumns: MRT_ColumnDef<adminOwnerColumnsTypes>[] = [
     accessorKey: "action",
     header: "Action ",
     size: 200,
+    enableColumnFilter: false,
     Cell: ({ row }) => {
       const style = {
         display: "flex",

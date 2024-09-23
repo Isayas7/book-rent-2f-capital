@@ -20,11 +20,14 @@ export const adminLiveBookColumns: MRT_ColumnDef<adminLiveBookColumnsTypes>[] =
     {
       accessorKey: "id",
       header: "No.",
+      enableColumnFilter: false,
       size: 40,
     },
     {
       accessorKey: "bookNumber",
       header: "Book no.",
+      filterFn: "equals",
+      columnFilterModeOptions: ['equals', 'notEquals', "lessThan", "greaterThan"],
       size: 40,
       Cell: ({ row }) => (
         <Box
@@ -43,6 +46,8 @@ export const adminLiveBookColumns: MRT_ColumnDef<adminLiveBookColumnsTypes>[] =
       accessorKey: "owner.username",
       header: "Owner",
       size: 150,
+      filterFn: "contains",
+      columnFilterModeOptions: ['equals', 'notEquals', 'contains', 'startsWith', 'endsWith'],
       Cell: ({ row }) => {
         const username = row.original?.owner.email?.split('@');
         return (
@@ -62,6 +67,8 @@ export const adminLiveBookColumns: MRT_ColumnDef<adminLiveBookColumnsTypes>[] =
     {
       accessorKey: "rentals.status",
       header: "Status",
+      filterFn: "equals",
+      columnFilterModeOptions: ['equals', 'notEquals',],
       size: 150,
       Cell: ({ row }) => {
         return (
@@ -113,6 +120,8 @@ export const adminLiveBookColumns: MRT_ColumnDef<adminLiveBookColumnsTypes>[] =
     {
       accessorKey: "rentPrice",
       header: "Price",
+      filterFn: "equals",
+      columnFilterModeOptions: ['equals', 'notEquals', "lessThan", "greaterThan"],
       size: 200,
     },
   ];

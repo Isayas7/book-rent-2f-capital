@@ -105,9 +105,13 @@ const RegisterForm = () => {
       </Button>
       <Box sx={{ display: "flex", justifyContent: "center" }}>
         <Typography>Already have an account?</Typography>
-        <Link href="/login" style={{ color: "#0f4ec2" }}>
-          Login
-        </Link>
+
+        <div suppressHydrationWarning>
+          {typeof window !== 'undefined' && <Link href="/login" style={{ color: "#0f4ec2" }}>
+            Login
+          </Link>
+          }
+        </div>
       </Box>
     </form>
   );
